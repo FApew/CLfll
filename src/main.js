@@ -3,23 +3,24 @@ import * as CANNON from 'https://cdn.jsdelivr.net/npm/cannon-es@0.20.0/+esm'
 import WebGL from 'three/addons/capabilities/WebGL.js'
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js'
 import { Pos } from "./assets/js/data.js"
-import { robot, cRobot, chasBody, wheel1, wheel2 } from "./assets/js/robot.js"
+import { robot, cRobot, chasBody } from "./assets/js/robot.js"
 import { dirLight, hemiLight } from "./assets/js/lights.js"
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js'
-//import CannonDebugger from "cannon-es-debugger"
+import CannonDebugger from "cannon-es-debugger"
 
 const container = document.getElementById("main")
 
 const scene = new THREE.Scene()
 
-const mNumber = 4
+const mNumber = 4, speed = {s: 15, t: 10}
 
 function init() {
     if (WebGL.isWebGLAvailable()) {
-        let vel = {w: 0, a: 0, s: 0, d: 0, shift: 0}
+        let btn = {w: 0, a: 0, s: 0, d: 0, shift: 0, Rcl: 0}
 
         const camera = new THREE.PerspectiveCamera(30, container.clientWidth / container.clientHeight, 0.1, 1000)
         camera.position.set(-80, 56, 140)
+        camera.focus = 100
 
         const renderer = new THREE.WebGLRenderer({ antialias: true})
         renderer.setSize( container.clientWidth, container.clientHeight)
@@ -29,17 +30,14 @@ function init() {
         renderer.clearColor("black");
 
         const controls = new OrbitControls( camera, renderer.domElement)
-        controls.enableRotate = false
+        /*controls.enableRotate = false
         controls.screenSpacePanning = false
-        controls.enableZoom = false
+        controls.enableZoom = false*/
 
         const dirBox = new THREE.Group()
         dirBox.add(dirLight)
         scene.add(dirBox)
         scene.add(dirLight.target)
-
-        const helper = new THREE.CameraHelper(dirLight.shadow.camera)
-        //scene.add(helper)
 
         scene.add(hemiLight)
 
@@ -48,13 +46,22 @@ function init() {
         })
 
         let size = 200
-        const plane = new THREE.Mesh(
+        const fllField = new THREE.Mesh(
             new THREE.BoxGeometry(size, 0.01, size/16*9),
             new THREE.MeshStandardMaterial({ 
                 map: new THREE.TextureLoader().load("../src/assets/img/0.png"),
                 flatShading: true
             })
         )
+        fllField.receiveShadow = true
+        fllField.position.set(0, .4, 0);
+        //scene.add(fllField)
+
+        const plane = new THREE.Mesh(
+            new THREE.PlaneGeometry(16000, 16000), 
+            new THREE.MeshStandardMaterial({color: 0x38A8FF})
+        )
+        plane.rotation.set(-Math.PI/2, 0, 0)
         plane.receiveShadow = true
         scene.add(plane)
 
@@ -124,34 +131,78 @@ function init() {
         }
 
         document.addEventListener("keydown", (e) => {
-            let k = e.key
-            if (k === "w") {
-                vel.w = 1
-            } else if (k === "a") {
-                vel.a = 1
-            } else if (k === "s") {
-                vel.s = 1
-            } else if (k === "d") {
-                vel.d = 1
-            } else if (k === "Shift") {
-                vel.shift = 1
+            switch (e.key) {
+
+                case "w":
+                case "ArrowUp": {
+                    btn.w = 1
+                    break 
+                }
+
+                case "a":
+                case "ArrowLeft": {
+                    btn.a = 1
+                    break
+                }
+
+                case "s":
+                case "ArrowDown": {
+                    btn.s = 1
+                    break
+                }
+
+                case "d":
+                case "ArrowRight": {
+                    btn.d = 1
+                    break
+                }
+                
+                case "Shift": {
+                    btn.shift = 1
+                    break
+                }
             }
+            btn.Rcl = 0
         })
 
         document.addEventListener("keyup", (e) => {
-            let k = e.key
-            if (k === "w") {
-                vel.w = 0
-            } else if (k === "a") {
-                vel.a = 0
-            } else if (k === "s") {
-                vel.s = 0
-            } else if (k === "d") {
-                vel.d = 0
-            } else if (k === "Shift") {
-                vel.shift = 0
+            switch (e.key) {
+
+                case "w":
+                case "ArrowUp": {
+                    btn.w = 0
+                    break 
+                }
+
+                case "a":
+                case "ArrowLeft": {
+                    btn.a = 0
+                    break
+                }
+
+                case "s":
+                case "ArrowDown": {
+                    btn.s = 0
+                    break
+                }
+
+                case "d":
+                case "ArrowRight": {
+                    btn.d = 0
+                    break
+                }
+
+                case "Shift": {
+                    btn.shift = 0
+                    break
+                }
             }
-            
+        })
+
+        document.addEventListener("mousedown", (e) => {
+            if (e.button == 2) {
+                btn.Rcl = 1
+            }
         })
 
         const startPos = camera.position.clone()
@@ -160,7 +211,7 @@ function init() {
         cRobot.material = robotMaterial
         cPlane.material = robotMaterial
 
-        //const cannonDebugger = new CannonDebugger(scene, world, {})
+        const cannonDebugger = new CannonDebugger(scene, world, {})
 
         function animate() {
             dirBox.position.set(camera.position.x - startPos.x - 80, camera.position.y - startPos.y + 56, camera.position.z - startPos.z + 140);
@@ -171,36 +222,34 @@ function init() {
             cRobot.setWheelForce(0, 0)
             cRobot.setWheelForce(0, 1)
 
-            if (vel.shift) {
+            if (btn.shift) {
                 k1 *= 2
                 k2 *= 2
             }
             
-            if (vel.d && !vel.shift) {
-                cRobot.setWheelForce(60, 0)
-                cRobot.setWheelForce(-60, 1)
-                k1 *= -5.5
-                k2 *= 6
-            } else if (vel.a && !vel.shift) {
-                cRobot.setWheelForce(-60, 0)
-                cRobot.setWheelForce(60, 1)
-                k1 *= 6
-                k2 *= -5.5
+            if (btn.d && !btn.shift) {
+                cRobot.setWheelForce(speed.t, 0)
+                cRobot.setWheelForce(-speed.t, 1)
+                k1 *= 0
+                k2 *= 1.5
+            } else if (btn.a && !btn.shift) {
+                cRobot.setWheelForce(-speed.t, 0)
+                cRobot.setWheelForce(speed.t, 1)
+                k1 *= 1.5
+                k2 *= 0
             }
             
-            if (vel.w) {
-                cRobot.setWheelForce(-10*k1, 0)
-                cRobot.setWheelForce(-10*k2, 1)
-            } else if (vel.s) {
-                cRobot.setWheelForce(10*k1, 0)
-                cRobot.setWheelForce(10*k2, 1)
+            if (btn.w) {
+                cRobot.setWheelForce(-speed.s*k1, 0)
+                cRobot.setWheelForce(-speed.s*k2, 1)
+            } else if (btn.s) {
+                cRobot.setWheelForce(speed.s*k1, 0)
+                cRobot.setWheelForce(speed.s*k2, 1)
             }
 
-            camera.position.set(robot.position.x, 56, robot.position.z+100)
-            camera.lookAt(robot.position)
-            
-            if ((vel.w || vel.a) || (vel.s || vel.d)) {
-                
+            if (!btn.Rcl) {
+                camera.position.set(robot.position.x, 56, robot.position.z+100)
+                camera.rotation.set(-0.4636,0,0)
             } else {
                 controls.update()
                 camera.rotation.set(-0.4636,0,0)
@@ -219,8 +268,9 @@ function init() {
                 } catch (e) {}
             }
             
-            //cannonDebugger.update()
-
+            cannonDebugger.update()
+            //camera.position.set(-96.66457673308406, 0.12664596784900795, 64.39896081993017)
+            //camera.rotation.set(-0.23905961802462464, -0.5525403285779773, -0.12722594623065786)
             renderer.render(scene, camera)
             requestAnimationFrame( animate )
         }

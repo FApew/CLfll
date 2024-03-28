@@ -1,6 +1,7 @@
 import * as THREE from "three"
 import * as CANNON from 'https://cdn.jsdelivr.net/npm/cannon-es@0.20.0/+esm'
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js'
+import { Vec3 } from "cannon-es"
 
 const loader = new GLTFLoader()
 
@@ -26,47 +27,48 @@ robot.position.set(-80, 50, 40)
 robot.rotation.set(0,Math.PI*-1/4,0)
 
 export let chasBody = new CANNON.Body({
-    mass: 5,
+    mass: 1.5,
     position: new CANNON.Vec3(robot.position.x,robot.position.y,robot.position.z),
-    rotation: new CANNON.Quaternion().setFromEuler(Math.PI/2,234,0),
-    shape: new CANNON.Box( new CANNON.Vec3(10, 5.3, 9.225))
+    rotation: new CANNON.Quaternion()
 })
+chasBody.addShape(new CANNON.Box( new CANNON.Vec3(10, 4.45, 9.225)), new Vec3(0,-.7,0))
+chasBody.addShape(new CANNON.Box(new CANNON.Vec3(4.35, 1.16 , 3.6)), new Vec3(0,4.84,3.995))
 
 export const cRobot = new CANNON.RigidVehicle({
-    chassisBody: chasBody
+    chassisBody: chasBody,
 })
 let mat = new CANNON.Material("wheel")
-mat.friction = 0
+//mat.friction = 5
 
-let sh = new CANNON.Sphere(2.8)//CANNON.Cylinder(2.8, 2.8, 1.5, 16)
-export let wheel1 = new CANNON.Body({
-    mass: 1,
+let sh = new CANNON.Sphere(2.78)//CANNON.Cylinder(2.8, 2.8, 1.5, 16)
+let wheel1 = new CANNON.Body({
+    mass: .2,
     material: mat
 })
 
 wheel1.addShape(sh, new CANNON.Vec3(0, 0, 0), new CANNON.Quaternion().setFromEuler(0, 0, Math.PI/2))
-wheel1.angularDamping = .4
+wheel1.angularDamping = .999
 
-export let wheel2 = new CANNON.Body({
-    mass: 1,
+let wheel2 = new CANNON.Body({
+    mass: .2,
     material: mat
 })
 wheel2.addShape(sh, new CANNON.Vec3(0, 0, 0), new CANNON.Quaternion().setFromEuler(0, 0, Math.PI/2))
-wheel2.angularDamping = .4
+wheel2.angularDamping = .999
 
-sh = new CANNON.Sphere(0.85)//CANNON.Cylinder(0.85, 0.85, 0.72, 16)
+sh = new CANNON.Sphere(1.25)//CANNON.Cylinder(0.85, 0.85, 0.72, 16)
 mat = new CANNON.Material("wheel")
 mat.friction = 0
 
 let wheel3 = new CANNON.Body({
-    mass: .5,
+    mass: .1,
     material: mat
 })
 wheel3.addShape(sh, new CANNON.Vec3(0, 0, 0), new CANNON.Quaternion().setFromEuler(0, 0, Math.PI/2))
 wheel3.angularDamping = 0
 
 let wheel4 = new CANNON.Body({
-    mass: .5,
+    mass: .1,
     material: mat
 })
 wheel4.addShape(sh, new CANNON.Vec3(0, 0, 0), new CANNON.Quaternion().setFromEuler(0, 0, Math.PI/2))
@@ -74,28 +76,30 @@ wheel4.angularDamping = 0
 
 cRobot.addWheel({
     body: wheel1,
-    position: new CANNON.Vec3(8.075, -2.7, 4.775),
+    position: new CANNON.Vec3(7.975, -3.22, 4.775),
     axis: new CANNON.Vec3(1,0,0),
-    direction: new CANNON.Vec3(0,0,1),
+    direction: new CANNON.Vec3(0,-1,0),
 })
 
 cRobot.addWheel({
     body: wheel2,
-    position: new CANNON.Vec3(-7.975, -2.7, 4.775),
+    position: new CANNON.Vec3(-7.975, -3.22, 4.775),
     axis: new CANNON.Vec3(1,0,0),
-    direction: new CANNON.Vec3(0,0,1),
+    direction: new CANNON.Vec3(0,-1,0),
 })
 
 cRobot.addWheel({
     body: wheel3,
     position: new CANNON.Vec3(6.375, -4.75, -5.625),
-    axis: new CANNON.Vec3(1,0,0),
-    direction: new CANNON.Vec3(0,0,1),
+    axis: new CANNON.Vec3(0,0,0),
+    direction: new CANNON.Vec3(0,-1,0),
 })
 
 cRobot.addWheel({
     body: wheel4,
-    position: new CANNON.Vec3(-5.625, -4.75, -5.625),
-    axis: new CANNON.Vec3(1,0,0),
-    direction: new CANNON.Vec3(0,0,1),
+    position: new CANNON.Vec3(-6.375, -4.75, -5.625),
+    axis: new CANNON.Vec3(0,0,0),
+    direction: new CANNON.Vec3(0,-1,0),
 })
+
+cRobot.chassisBody.quaternion = new CANNON.Quaternion().setFromAxisAngle(new CANNON.Vec3(0,1,0), -.6)
