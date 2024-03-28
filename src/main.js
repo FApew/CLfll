@@ -20,7 +20,9 @@ function init() {
 
         const camera = new THREE.PerspectiveCamera(30, container.clientWidth / container.clientHeight, 0.1, 1000)
         camera.position.set(-80, 56, 140)
-        camera.focus = 100
+        camera.near = 5
+        camera.far = 500
+        camera.updateProjectionMatrix()
 
         const renderer = new THREE.WebGLRenderer({ antialias: true})
         renderer.setSize( container.clientWidth, container.clientHeight)
@@ -30,9 +32,9 @@ function init() {
         renderer.clearColor("black");
 
         const controls = new OrbitControls( camera, renderer.domElement)
-        /*controls.enableRotate = false
+        controls.enableRotate = false
         controls.screenSpacePanning = false
-        controls.enableZoom = false*/
+        controls.enableZoom = false
 
         const dirBox = new THREE.Group()
         dirBox.add(dirLight)
@@ -54,14 +56,15 @@ function init() {
             })
         )
         fllField.receiveShadow = true
-        fllField.position.set(0, .4, 0);
-        //scene.add(fllField)
+        fllField.position.set(0, 0.01, 0);
+        scene.add(fllField)
 
         const plane = new THREE.Mesh(
             new THREE.PlaneGeometry(16000, 16000), 
             new THREE.MeshStandardMaterial({color: 0x38A8FF})
         )
         plane.rotation.set(-Math.PI/2, 0, 0)
+        plane.position.set(0,0,0)
         plane.receiveShadow = true
         scene.add(plane)
 
