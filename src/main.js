@@ -6,7 +6,7 @@ import { Pos } from "./assets/js/data.js"
 import { robot, cRobot, chasBody } from "./assets/js/robot.js"
 import { dirLight, hemiLight } from "./assets/js/lights.js"
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js'
-import CannonDebugger  from 'https://cdn.jsdelivr.net/npm/cannon-es-debugger@1.0.0/+esm'
+//import CannonDebugger from "cannon-es-debugger"
 
 const container = document.getElementById("main")
 
@@ -211,7 +211,7 @@ function init() {
         cRobot.material = robotMaterial
         cPlane.material = robotMaterial
 
-        const cannonDebugger = new CannonDebugger(scene, world, {})
+        //const cannonDebugger = new CannonDebugger(scene, world, {})
 
         function animate() {
             dirBox.position.set(camera.position.x - startPos.x - 80, camera.position.y - startPos.y + 56, camera.position.z - startPos.z + 140);
@@ -268,7 +268,7 @@ function init() {
                 } catch (e) {}
             }
             
-            cannonDebugger.update()
+            //cannonDebugger.update()
             //camera.position.set(-96.66457673308406, 0.12664596784900795, 64.39896081993017)
             //camera.rotation.set(-0.23905961802462464, -0.5525403285779773, -0.12722594623065786)
             renderer.render(scene, camera)
