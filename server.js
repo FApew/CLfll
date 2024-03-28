@@ -41,7 +41,7 @@ for (let i = 0; i < 17; i++) {
         res.sendFile(__dirname + `/src/assets/model/${i}.glb`)
     })
 }
-for (let i = 0; i < 5; i++) {
+for (let i = 0; i < 6; i++) {
     app.get(`/src/assets/img/${i}.png`, (req, res) => {
         res.sendFile(__dirname + `/src/assets/img/${i}.png`)
     })
