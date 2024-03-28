@@ -8,11 +8,20 @@ import { dirLight, hemiLight } from "./assets/js/lights.js"
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js'
 //import CannonDebugger from "cannon-es-debugger"
 
+const Ibtn = [
+    document.getElementById("Iforward"),
+    document.getElementById("Ibackwards"),
+    document.getElementById("Ileft"),
+    document.getElementById("Iright"),
+]
+
 const container = document.getElementById("main")
 
 const scene = new THREE.Scene()
 
-const mNumber = 4, speed = {s: 15, t: 10}
+const mNumber = 4, speed = {s: 15, t: 10}, shadow = [4096, 512]
+
+let bPhone = window.innerWidth < 768 ? true : false
 
 function init() {
     if (WebGL.isWebGLAvailable()) {
@@ -131,6 +140,7 @@ function init() {
             camera.aspect = container.clientWidth / container.clientHeight
             camera.updateProjectionMatrix()
             renderer.setSize(container.clientWidth, container.clientHeight )
+            bPhone = window.innerWidth < 768 ? true : false
         }
 
         document.addEventListener("keydown", (e) => {
@@ -208,6 +218,43 @@ function init() {
             }
         })
 
+        Ibtn[0].addEventListener("touchstart", (e) => {
+            btn.w = 1
+            e.preventDefault()
+        })
+
+        Ibtn[1].addEventListener("touchstart", (e) => {
+            btn.s = 1
+            e.preventDefault()
+        })
+
+
+        Ibtn[2].addEventListener("touchstart", (e) => {
+            btn.a = 1
+            e.preventDefault()
+        })
+
+        Ibtn[3].addEventListener("touchstart", (e) => {
+            btn.d = 1
+            e.preventDefault()
+        })
+
+        Ibtn[0].addEventListener("touchend", () => {
+            btn.w = 0
+        })
+
+        Ibtn[1].addEventListener("touchend", () => {
+            btn.s = 0
+        })
+
+        Ibtn[2].addEventListener("touchend", () => {
+            btn.a = 0
+        })
+
+        Ibtn[3].addEventListener("touchend", () => {
+            btn.d = 0
+        })
+
         const startPos = camera.position.clone()
 
         const robotMaterial = new CANNON.Material()
@@ -217,6 +264,12 @@ function init() {
         //const cannonDebugger = new CannonDebugger(scene, world, {})
 
         function animate() {
+            if (bPhone) {
+                renderer.shadowMap.enabled = false
+            } else {
+                renderer.shadowMap.enabled = true
+            }
+
             dirBox.position.set(camera.position.x - startPos.x - 80, camera.position.y - startPos.y + 56, camera.position.z - startPos.z + 140);
             dirLight.target.position.set(camera.position.x - startPos.x - 80, camera.position.y - startPos.y + 56, camera.position.z - startPos.z + 140)
 
