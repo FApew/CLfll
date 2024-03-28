@@ -1,7 +1,6 @@
 import * as THREE from "three"
 import * as CANNON from 'https://cdn.jsdelivr.net/npm/cannon-es@0.20.0/+esm'
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js'
-import { Vec3 } from "cannon-es"
 
 const loader = new GLTFLoader()
 

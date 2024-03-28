@@ -14,7 +14,8 @@
     "express": "^4.19.1",
     "path": "^0.12.7",
     "three": "^0.162.0",
-    "url": "^0.11.3"
+    "url": "^0.11.3",
+    "vite": "^5.2.6"
   },
   "devDependencies": {
     "cannon-es-debugger": "^1.0.0"
