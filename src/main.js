@@ -6,7 +6,7 @@ import { Pos } from "./assets/js/data.js"
 import { robot, cRobot, chasBody } from "./assets/js/robot.js"
 import { dirLight, hemiLight } from "./assets/js/lights.js"
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js'
-import CannonDebugger from "cannon-es-debugger"
+import CannonDebugger  from 'https://cdn.jsdelivr.net/npm/cannon-es-debugger@1.0.0/+esm'
 
 const container = document.getElementById("main")
 
