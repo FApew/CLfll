@@ -30,8 +30,8 @@ export let chasBody = new CANNON.Body({
     position: new CANNON.Vec3(robot.position.x,robot.position.y,robot.position.z),
     rotation: new CANNON.Quaternion()
 })
-chasBody.addShape(new CANNON.Box( new CANNON.Vec3(10, 4.45, 9.225)), new Vec3(0,-.7,0))
-chasBody.addShape(new CANNON.Box(new CANNON.Vec3(4.35, 1.16 , 3.6)), new Vec3(0,4.84,3.995))
+chasBody.addShape(new CANNON.Box( new CANNON.Vec3(10, 4.45, 9.225)), new CANNON.Vec3(0,-.7,0))
+chasBody.addShape(new CANNON.Box(new CANNON.Vec3(4.35, 1.16 , 3.6)), new CANNON.Vec3(0,4.84,3.995))
 
 export const cRobot = new CANNON.RigidVehicle({
     chassisBody: chasBody,
