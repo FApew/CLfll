@@ -2,16 +2,15 @@ import * as THREE from "three"
 
 export const dirLight = new THREE.DirectionalLight( 0xffffff, 3)
 dirLight.color.setHSL( 0.1, 1, 0.95)
-dirLight.position.set( -.3, 1.5, .1)
-dirLight.position.multiplyScalar(30)
+dirLight.position.set( -10, 45, 2.3)
 dirLight.castShadow = true
 let shadow = dirLight.shadow.camera
-let fSize = 90      
+let fSize = 110      
 shadow.top = fSize*2
 shadow.right = fSize*2
 shadow.bottom = -fSize
-shadow.left = -fSize*2
-let sSize = 1024
+shadow.left = -fSize*3
+let sSize = 4096
 dirLight.shadow.mapSize.width = sSize
 dirLight.shadow.mapSize.height = sSize
 dirLight.shadow.camera.bias = -0.005

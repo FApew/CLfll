@@ -3,26 +3,34 @@ import * as CANNON from 'https://cdn.jsdelivr.net/npm/cannon-es@0.20.0/+esm'
 import WebGL from 'three/addons/capabilities/WebGL.js'
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js'
 import { Pos } from "./assets/js/data.js"
-import { robot } from "./assets/js/robot.js"
+import { robot, cRobot, chasBody } from "./assets/js/robot.js"
 import { dirLight, hemiLight } from "./assets/js/lights.js"
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js'
-//import CannonDebugger from "cannon-es-debugger"
+import CannonDebugger from "cannon-es-debugger"
+
+const Ibtn = [
+    document.getElementById("Iforward"),
+    document.getElementById("Ibackwards"),
+    document.getElementById("Ileft"),
+    document.getElementById("Iright"),
+]
 
 const container = document.getElementById("main")
 
 const scene = new THREE.Scene()
 
-const sphereRadius = 7
+const mNumber = 0, speed = {s: 15, t: 10}, shadow = [4096, 512]
 
-const speed = {rot: .5, mov:6}
+let bPhone = window.innerWidth < 768 ? true : false
 
 function init() {
     if (WebGL.isWebGLAvailable()) {
-        alert("wasd for move the robot");
-        let vel = {w: 0, a: 0, s: 0, d: 0, shift: 0}
 
         const camera = new THREE.PerspectiveCamera(30, container.clientWidth / container.clientHeight, 0.1, 1000)
         camera.position.set(-80, 56, 140)
+        camera.near = 5
+        camera.far = 500
+        camera.updateProjectionMatrix() 
 
         const renderer = new THREE.WebGLRenderer({ antialias: true})
         renderer.setSize( container.clientWidth, container.clientHeight)
@@ -46,20 +54,31 @@ function init() {
         const world = new CANNON.World({
             gravity: new CANNON.Vec3(0, -9.806, 0)
         })
-        let size = 200
-        const plane = new THREE.Mesh(
+
+        /*let size = 200
+        const fllField = new THREE.Mesh(
             new THREE.BoxGeometry(size, 0.01, size/16*9),
             new THREE.MeshStandardMaterial({ 
                 map: new THREE.TextureLoader().load("../src/assets/img/0.png"),
                 flatShading: true
             })
         )
+        fllField.receiveShadow = true
+        fllField.position.set(0, 0.01, 0);
+        scene.add(fllField)*/
+
+        const plane = new THREE.Mesh(
+            new THREE.PlaneGeometry(16000, 16000), 
+            new THREE.MeshStandardMaterial({color: 0x38A8FF})
+        )
+        plane.rotation.set(-Math.PI/2, 0, 0)
+        plane.position.set(0,0,0)
         plane.receiveShadow = true
         scene.add(plane)
 
         const cPlane = new CANNON.Body({
             type: CANNON.Body.STATIC,
-            shape: new CANNON.Plane()
+            shape: new CANNON.Plane(),
         })
         cPlane.quaternion.setFromEuler(-Math.PI / 2, 0, 0)
         world.addBody(cPlane)
@@ -68,106 +87,214 @@ function init() {
 
         const loader = new GLTFLoader()
 
-        for (let i = 0; i < 1; i++) {
+        let cMissArr = [], missArr = []
+
+        for (let i = 0; i < mNumber; i++) {
+            let Miss = new THREE.Group()
             loader.load(`../src/assets/model/${i+1}.glb`, (gltf) => {
-                let obj = gltf.scene;
-                obj.scale.set(1, 1, 1);
-                obj.position.set(Pos[i].p.x, 0, Pos[i].p.z)
-                obj.rotation.y = Pos[i].r,
+                const obj = gltf.scene
                 obj.traverse((child) => {
                     if (child.isMesh) {
-                        if (child.material) {
-                            child.material = new THREE.MeshStandardMaterial({ color: child.material.color, map: child.material.map })
-                            child.material.side = THREE.DoubleSide
-                        }
-                        child.geometry.computeVertexNormals()
+                        const newMaterial = new THREE.MeshStandardMaterial({
+                            color: child.material.color,
+                            map: child.material.map,
+                            side: THREE.DoubleSide
+                        })
+                        child.material = newMaterial
                         child.castShadow = true
                         child.receiveShadow = true
+                        child.geometry.computeVertexNormals()
                     }
                 })
-                missions.add(obj)
-            })
+                Miss.add(obj)
+                Miss.position.set(Pos[i].p.x, Pos[i].b.y/2, Pos[i].p.z)
+                Miss.rotation.y = Pos[i].r
+                missArr[i] = Miss
+                missions.add(Miss)
 
-            const cMiss = new CANNON.Body({
-                type: CANNON.Body.STATIC,
-                shape: new CANNON.Box( new CANNON.Vec3(Pos[i].b.x, Pos[i].b.y, Pos[i].b.z))
+                const cMiss = new CANNON.Body({
+                    type: Pos[i].s ? CANNON.Body.STATIC : CANNON.Body.DYNAMIC,
+                    shape: new CANNON.Box(new CANNON.Vec3(Pos[i].b.x, Pos[i].b.y, Pos[i].b.z)),
+                    position: new CANNON.Vec3(Pos[i].p.x, Pos[i].b.y, Pos[i].p.z),
+                    material: new CANNON.Material({friction: 0.1}),
+                    mass: Pos[i].s ? 0 : .01
+                })
+                cMiss.quaternion.setFromEuler(0, Pos[i].r, 0)
+            
+                world.addBody(cMiss)
+            
+                cMissArr[i] = cMiss
             })
-            cMiss.position.y = Pos[i].b.y/2
-            world.addBody(cMiss)
         }
 
-        
+        let Letters = new THREE.Group(), cLetts = [], LettArr = []
 
+        for (let i = 0; i < 11; i++) {
+            let idx = i == 6 ? 4 : i == 7 ? 0 : i
+            loader.load(`../src/assets/model/letters/${idx}.glb`, (gltf) => {
+                const obj = gltf.scene
+                
+                obj.traverse((child) => {
+                    if (child.isMesh) {
+                        const newMaterial = new THREE.MeshStandardMaterial({
+                            color: child.material.color,
+                            map: child.material.map,
+                            side: THREE.DoubleSide
+                        })
+                        child.material = newMaterial
+                        child.castShadow = true
+                        child.receiveShadow = true
+                        child.geometry.computeVertexNormals()
+                    }
+                })
+
+                obj.scale.set(12,12*1.4,12)
+
+                let box = new THREE.Box3().setFromObject(obj)
+                let size = new THREE.Vector3()
+                box.getSize(size)
+
+                obj.position.set(-60+6*i, size.z/2, -10+6*i)
+                obj.rotation.set(Math.PI/2, 0, Math.PI/4)
+                Letters.add(obj)
+                LettArr[i] = obj
+
+                const cLett = new CANNON.Body({
+                    shape: new CANNON.Box(new CANNON.Vec3(size.x/2, size.y/2, size.z/2)),
+                    position: new CANNON.Vec3(-60+6*i, size.z/2, -10+6*i),
+                    mass: .01
+                })
+                cLett.quaternion.setFromEuler(Math.PI/2, 0, Math.PI/4)
+                world.addBody(cLett)
+                cLetts[i] = cLett
+            })
+        }
 
         scene.add(missions)
-        missions.children.forEach((child) => {
-            console.log(child.position)
-        })
-
-        const palla = new THREE.Mesh(
-            new THREE.SphereGeometry(sphereRadius),
-            new THREE.MeshStandardMaterial({color: 0xa17fff})
-        )
-        palla.position.x = 20
-        palla.position.y = sphereRadius+5
-        palla.position.z = 0
-        palla.castShadow = true
-        scene.add(palla)
-
-        const cpalla = new CANNON.Body({
-            shape: new CANNON.Sphere(sphereRadius),
-            position: new CANNON.Vec3(palla.position.x, palla.position.y, palla.position.z),
-            mass: sphereRadius*2
-        })
-        world.addBody(cpalla)
-
+        scene.add(Letters)
         scene.add(robot)
 
-        const cRobot = new CANNON.Body({
-            shape: new CANNON.Box(new CANNON.Vec3(10, 6, 9.225)),
-            position: new CANNON.Vec3(robot.position.x,robot.position.y,robot.position.z),
-            mass: 5
-        })
-        cRobot.quaternion.setFromEuler(0,robot.rotation.y,0)
-        world.addBody(cRobot)
+        cRobot.addToWorld(world)
 
         camera.lookAt(robot.position)
-        
+
         window.onresize = () => {
             camera.aspect = container.clientWidth / container.clientHeight
             camera.updateProjectionMatrix()
             renderer.setSize(container.clientWidth, container.clientHeight )
+            bPhone = window.innerWidth < 768 ? true : false
         }
 
         document.addEventListener("keydown", (e) => {
-            let k = e.key
-            if (k === "w") {
-                vel.w = 1
-            } else if (k === "a") {
-                vel.a = 1
-            } else if (k === "s") {
-                vel.s = 1
-            } else if (k === "d") {
-                vel.d = 1
-            } else if (k === "Shift") {
-                vel.shift = 1
+            switch (e.key) {
+
+                case "w":
+                case "ArrowUp": {
+                    btn.w = 1
+                    break 
+                }
+
+                case "a":
+                case "ArrowLeft": {
+                    btn.a = 1
+                    break
+                }
+
+                case "s":
+                case "ArrowDown": {
+                    btn.s = 1
+                    break
+                }
+
+                case "d":
+                case "ArrowRight": {
+                    btn.d = 1
+                    break
+                }
+                
+                case "Shift": {
+                    btn.shift = 1
+                    break
+                }
             }
+            btn.Rcl = 0
         })
 
         document.addEventListener("keyup", (e) => {
-            let k = e.key
-            if (k === "w") {
-                vel.w = 0
-            } else if (k === "a") {
-                vel.a = 0
-            } else if (k === "s") {
-                vel.s = 0
-            } else if (k === "d") {
-                vel.d = 0
-            } else if (k === "Shift") {
-                vel.shift = 0
+            switch (e.key) {
+
+                case "w":
+                case "ArrowUp": {
+                    btn.w = 0
+                    break 
+                }
+
+                case "a":
+                case "ArrowLeft": {
+                    btn.a = 0
+                    break
+                }
+
+                case "s":
+                case "ArrowDown": {
+                    btn.s = 0
+                    break
+                }
+
+                case "d":
+                case "ArrowRight": {
+                    btn.d = 0
+                    break
+                }
+
+                case "Shift": {
+                    btn.shift = 0
+                    break
+                }
             }
-            
+        })
+
+        document.addEventListener("mousedown", (e) => {
+            if (e.button == 2) {
+                btn.Rcl = 1
+            }
+        })
+
+        Ibtn[0].addEventListener("touchstart", (e) => {
+            btn.w = 1
+            e.preventDefault()
+        })
+
+        Ibtn[1].addEventListener("touchstart", (e) => {
+            btn.s = 1
+            e.preventDefault()
+        })
+
+
+        Ibtn[2].addEventListener("touchstart", (e) => {
+            btn.a = 1
+            e.preventDefault()
+        })
+
+        Ibtn[3].addEventListener("touchstart", (e) => {
+            btn.d = 1
+            e.preventDefault()
+        })
+
+        Ibtn[0].addEventListener("touchend", () => {
+            btn.w = 0
+        })
+
+        Ibtn[1].addEventListener("touchend", () => {
+            btn.s = 0
+        })
+
+        Ibtn[2].addEventListener("touchend", () => {
+            btn.a = 0
+        })
+
+        Ibtn[3].addEventListener("touchend", () => {
+            btn.d = 0
         })
 
         
@@ -189,66 +316,82 @@ function init() {
         cRobot.material = robotMaterial
         cPlane.material = robotMaterial
 
-        //const cannonDebugger = new CannonDebugger(scene, world, {})
+        const cannonDebugger = new CannonDebugger(scene, world, {})
 
         function animate() {
-            dirBox.position.set(camera.position.x - startPos.x, camera.position.y - startPos.y, camera.position.z - startPos.z);
-            dirLight.target.position.set(camera.position.x - startPos.x, camera.position.y - startPos.y, camera.position.z - startPos.z)
-
-            if ((vel.w || vel.a) || (vel.s || vel.d)) {
-                cRobot.material.friction = 0.1
-                cPlane.material.friction = 0.1
+            if (bPhone) {
+                renderer.shadowMap.enabled = false
             } else {
-                cPlane.material.friction = 0.5
-                cRobot.material.friction = 0.5
+                renderer.shadowMap.enabled = true
             }
 
-            let k = 1
+            dirBox.position.set(camera.position.x - startPos.x - 80, camera.position.y - startPos.y + 56, camera.position.z - startPos.z + 140);
+            dirLight.target.position.set(camera.position.x - startPos.x - 80, camera.position.y - startPos.y + 56, camera.position.z - startPos.z + 140)
 
-            if (vel.shift) {
-                k *= 2
+            let k1 = 1, k2 = 1
+
+            cRobot.setWheelForce(0, 0)
+            cRobot.setWheelForce(0, 1)
+
+            if (btn.shift) {
+                k1 *= 2
+                k2 *= 2
             }
             
-            if (vel.d && !vel.shift) {
-                cRobot.angularVelocity.y = -speed.rot
-            } else if (vel.a && !vel.shift) {
-                cRobot.angularVelocity.y = speed.rot
-            } else {
-                cRobot.angularVelocity.y = 0
-            }
-
-            let angle = robot.rotation.y
-            if (Math.round(Math.abs(robot.rotation.x)*100)/100 != Math.round(Math.PI*100)/100) {
-                angle = -robot.rotation.y
-                k *= -1
+            if (btn.d && !btn.shift) {
+                cRobot.setWheelForce(speed.t, 0)
+                cRobot.setWheelForce(-speed.t, 1)
+                k1 *= 0
+                k2 *= 1.5
+            } else if (btn.a && !btn.shift) {
+                cRobot.setWheelForce(-speed.t, 0)
+                cRobot.setWheelForce(speed.t, 1)
+                k1 *= 1.5
+                k2 *= 0
             }
             
-            if (vel.w) {
-                cRobot.velocity.x = -speed.mov * Math.sin(angle)*k
-                cRobot.velocity.z = speed.mov * Math.cos(angle)*k
-            } else if (vel.s) {
-                cRobot.velocity.x = speed.mov * Math.sin(angle)*k
-                cRobot.velocity.z = -speed.mov * Math.cos(angle)*k
+            if (btn.w) {
+                cRobot.setWheelForce(-speed.s*k1, 0)
+                cRobot.setWheelForce(-speed.s*k2, 1)
+            } else if (btn.s) {
+                cRobot.setWheelForce(speed.s*k1, 0)
+                cRobot.setWheelForce(speed.s*k2, 1)
             }
 
-            if ((vel.w || vel.a) || (vel.s || vel.d)) {
-                camera.position.set(robot.position.x, 56, robot.position.z+100)
-                camera.lookAt(robot.position)
+            if (!btn.Rcl) {
+                camera.position.set(robot.position.x, 70, robot.position.z+100)
+                //camera.rotation.set(-0.4636,0,0)
+                camera.rotation.set(-0.57,0,0)
             } else {
                 controls.update()
-                camera.rotation.set(-0.4636,0,0)
+                camera.rotation.set(-0.57,0,0)
             }
 
            
             world.step(0.1)
 
-            palla.position.copy(cpalla.position)
-            palla.quaternion.copy(cpalla.quaternion)
-            robot.position.copy(cRobot.position)
-            robot.quaternion.copy(cRobot.quaternion)
+            robot.position.copy(chasBody.position)
+            robot.quaternion.copy(chasBody.quaternion)
 
-            //cannonDebugger.update()
+            for (let i = 0; i < missions.children.length; i++) {
+                try {
+                    let obj = missArr[i], cObj = cMissArr[i]
+                    obj.position.copy(cObj.position)
+                    obj.quaternion.copy(cObj.quaternion)
+                } catch (e) {}
+            }
 
+            for (let i = 0; i < 11; i++) {
+                try {
+                    let obj = LettArr[i], cObj = cLetts[i]
+                    obj.position.copy(cObj.position)
+                    obj.quaternion.copy(cObj.quaternion)
+                } catch (e) {}
+            }
+            
+            cannonDebugger.update()
+            //camera.position.set(-96.66457673308406, 0.12664596784900795, 64.39896081993017)
+            //camera.rotation.set(-0.23905961802462464, -0.5525403285779773, -0.12722594623065786)
             renderer.render(scene, camera)
             requestAnimationFrame( animate )
         }
