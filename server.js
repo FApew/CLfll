@@ -41,12 +41,20 @@ for (let i = 0; i < 17; i++) {
         res.sendFile(__dirname + `/src/assets/model/${i}.glb`)
     })
 }
+
+for (let i = 0; i < 10; i++) {
+    app.get(`/src/assets/model/letters/${i}.glb`, (req, res) => {
+        res.sendFile(__dirname + `/src/assets/model/letters/${i}.glb`)
+    })
+}
+
 for (let i = 0; i < 6; i++) {
     app.get(`/src/assets/img/${i}.png`, (req, res) => {
         res.sendFile(__dirname + `/src/assets/img/${i}.png`)
     })
 }
 
+
 app.listen(8080, () => {
-    console.log("App listening on https://localhost:8080/");
+    console.log("App listening on https://localhost:8080/")
 })

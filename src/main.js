@@ -6,7 +6,7 @@ import { Pos } from "./assets/js/data.js"
 import { robot, cRobot, chasBody } from "./assets/js/robot.js"
 import { dirLight, hemiLight } from "./assets/js/lights.js"
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js'
-//import CannonDebugger from "cannon-es-debugger"
+import CannonDebugger from "cannon-es-debugger"
 
 const Ibtn = [
     document.getElementById("Iforward"),
@@ -19,7 +19,7 @@ const container = document.getElementById("main")
 
 const scene = new THREE.Scene()
 
-const mNumber = 4, speed = {s: 15, t: 10}, shadow = [4096, 512]
+const mNumber = 0, speed = {s: 15, t: 10}, shadow = [4096, 512]
 
 let bPhone = window.innerWidth < 768 ? true : false
 
@@ -31,7 +31,7 @@ function init() {
         camera.position.set(-80, 56, 140)
         camera.near = 5
         camera.far = 500
-        camera.updateProjectionMatrix()
+        camera.updateProjectionMatrix() 
 
         const renderer = new THREE.WebGLRenderer({ antialias: true})
         renderer.setSize( container.clientWidth, container.clientHeight)
@@ -56,7 +56,7 @@ function init() {
             gravity: new CANNON.Vec3(0, -9.806, 0)
         })
 
-        let size = 200
+        /*let size = 200
         const fllField = new THREE.Mesh(
             new THREE.BoxGeometry(size, 0.01, size/16*9),
             new THREE.MeshStandardMaterial({ 
@@ -66,7 +66,7 @@ function init() {
         )
         fllField.receiveShadow = true
         fllField.position.set(0, 0.01, 0);
-        scene.add(fllField)
+        scene.add(fllField)*/
 
         const plane = new THREE.Mesh(
             new THREE.PlaneGeometry(16000, 16000), 
@@ -79,7 +79,7 @@ function init() {
 
         const cPlane = new CANNON.Body({
             type: CANNON.Body.STATIC,
-            shape: new CANNON.Plane()
+            shape: new CANNON.Plane(),
         })
         cPlane.quaternion.setFromEuler(-Math.PI / 2, 0, 0)
         world.addBody(cPlane)
@@ -128,14 +128,57 @@ function init() {
             })
         }
 
-        scene.add(missions)
+        let Letters = new THREE.Group(), cLetts = [], LettArr = []
 
+        for (let i = 0; i < 11; i++) {
+            let idx = i == 6 ? 4 : i == 7 ? 0 : i
+            loader.load(`../src/assets/model/letters/${idx}.glb`, (gltf) => {
+                const obj = gltf.scene
+                
+                obj.traverse((child) => {
+                    if (child.isMesh) {
+                        const newMaterial = new THREE.MeshStandardMaterial({
+                            color: child.material.color,
+                            map: child.material.map,
+                            side: THREE.DoubleSide
+                        })
+                        child.material = newMaterial
+                        child.castShadow = true
+                        child.receiveShadow = true
+                        child.geometry.computeVertexNormals()
+                    }
+                })
+
+                obj.scale.set(12,12*1.4,12)
+
+                let box = new THREE.Box3().setFromObject(obj)
+                let size = new THREE.Vector3()
+                box.getSize(size)
+
+                obj.position.set(-60+6*i, size.z/2, -10+6*i)
+                obj.rotation.set(Math.PI/2, 0, Math.PI/4)
+                Letters.add(obj)
+                LettArr[i] = obj
+
+                const cLett = new CANNON.Body({
+                    shape: new CANNON.Box(new CANNON.Vec3(size.x/2, size.y/2, size.z/2)),
+                    position: new CANNON.Vec3(-60+6*i, size.z/2, -10+6*i),
+                    mass: .01
+                })
+                cLett.quaternion.setFromEuler(Math.PI/2, 0, Math.PI/4)
+                world.addBody(cLett)
+                cLetts[i] = cLett
+            })
+        }
+
+        scene.add(missions)
+        scene.add(Letters)
         scene.add(robot)
-        
+
         cRobot.addToWorld(world)
 
         camera.lookAt(robot.position)
-        
+
         window.onresize = () => {
             camera.aspect = container.clientWidth / container.clientHeight
             camera.updateProjectionMatrix()
@@ -261,7 +304,7 @@ function init() {
         cRobot.material = robotMaterial
         cPlane.material = robotMaterial
 
-        //const cannonDebugger = new CannonDebugger(scene, world, {})
+        const cannonDebugger = new CannonDebugger(scene, world, {})
 
         function animate() {
             if (bPhone) {
@@ -304,11 +347,12 @@ function init() {
             }
 
             if (!btn.Rcl) {
-                camera.position.set(robot.position.x, 56, robot.position.z+100)
-                camera.rotation.set(-0.4636,0,0)
+                camera.position.set(robot.position.x, 70, robot.position.z+100)
+                //camera.rotation.set(-0.4636,0,0)
+                camera.rotation.set(-0.57,0,0)
             } else {
                 controls.update()
-                camera.rotation.set(-0.4636,0,0)
+                camera.rotation.set(-0.57,0,0)
             }
 
             world.step(0.1)
@@ -323,8 +367,16 @@ function init() {
                     obj.quaternion.copy(cObj.quaternion)
                 } catch (e) {}
             }
+
+            for (let i = 0; i < 11; i++) {
+                try {
+                    let obj = LettArr[i], cObj = cLetts[i]
+                    obj.position.copy(cObj.position)
+                    obj.quaternion.copy(cObj.quaternion)
+                } catch (e) {}
+            }
             
-            //cannonDebugger.update()
+            cannonDebugger.update()
             //camera.position.set(-96.66457673308406, 0.12664596784900795, 64.39896081993017)
             //camera.rotation.set(-0.23905961802462464, -0.5525403285779773, -0.12722594623065786)
             renderer.render(scene, camera)

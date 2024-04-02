@@ -22,8 +22,8 @@ loader.load("../src/assets/model/0.glb", (gltf) => {
     robot.add(obj)
 })
 
-robot.position.set(-80, 50, 40)
-robot.rotation.set(0,Math.PI*-1/4,0)
+//robot.position.set(-80, 50, 40)
+robot.position.set(0, 50, 0)
 
 export let chasBody = new CANNON.Body({
     mass: 1.5,
@@ -37,7 +37,6 @@ export const cRobot = new CANNON.RigidVehicle({
     chassisBody: chasBody,
 })
 let mat = new CANNON.Material("wheel")
-//mat.friction = 5
 
 let sh = new CANNON.Sphere(2.78)//CANNON.Cylinder(2.8, 2.8, 1.5, 16)
 let wheel1 = new CANNON.Body({
@@ -55,7 +54,7 @@ let wheel2 = new CANNON.Body({
 wheel2.addShape(sh, new CANNON.Vec3(0, 0, 0), new CANNON.Quaternion().setFromEuler(0, 0, Math.PI/2))
 wheel2.angularDamping = .999
 
-sh = new CANNON.Sphere(1.25)//CANNON.Cylinder(0.85, 0.85, 0.72, 16)
+sh = new CANNON.Sphere(1.25)
 mat = new CANNON.Material("wheel")
 mat.friction = 0
 
@@ -101,4 +100,4 @@ cRobot.addWheel({
     direction: new CANNON.Vec3(0,-1,0),
 })
 
-cRobot.chassisBody.quaternion = new CANNON.Quaternion().setFromAxisAngle(new CANNON.Vec3(0,1,0), -.6)
+cRobot.chassisBody.quaternion = new CANNON.Quaternion().setFromAxisAngle(new CANNON.Vec3(0,1,0), 1)
