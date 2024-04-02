@@ -25,7 +25,6 @@ let bPhone = window.innerWidth < 768 ? true : false
 
 function init() {
     if (WebGL.isWebGLAvailable()) {
-        let btn = {w: 0, a: 0, s: 0, d: 0, shift: 0, Rcl: 0}
 
         const camera = new THREE.PerspectiveCamera(30, container.clientWidth / container.clientHeight, 0.1, 1000)
         camera.position.set(-80, 56, 140)
@@ -298,6 +297,19 @@ function init() {
             btn.d = 0
         })
 
+        
+        //reset button
+        document.addEventListener("keypress", (e) => {
+            let k = e.key
+
+            if (k === "r")
+            {
+                cRobot.position.set(robot.position.x,robot.position.y+10,robot.position.z)
+                cRobot.quaternion.setFromEuler(0,robot.rotation.y,0)
+            }    
+        }) 
+
+
         const startPos = camera.position.clone()
 
         const robotMaterial = new CANNON.Material()
@@ -355,6 +367,7 @@ function init() {
                 camera.rotation.set(-0.57,0,0)
             }
 
+           
             world.step(0.1)
 
             robot.position.copy(chasBody.position)
