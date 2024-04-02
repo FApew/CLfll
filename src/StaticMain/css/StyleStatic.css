@@ -1,29 +1,33 @@
-
-
 body {
     margin: 0;
     overflow: hidden;
 }
 
 
+
+
 #app {
     position: absolute;
-    
+   
     width: 100%;
     height: 100%;
     display: grid;
     grid-template-columns: 100%;
     grid-template-rows: 5% 1fr;
-    
+   
 }
+
+
 
 
 /*topBar*/
 
+
 #bar {
     position: relative;
-    
+   
     background-color: #405daa;
+    /*animation: piazzo infinite 3s linear;*/
     color: white;
     width: 100%;
     height: 100%;
@@ -32,12 +36,14 @@ body {
     grid-template-columns: 3% 10% 1fr;
 }
 
+
 #logoBox {
     position: relative;
     height: 100%;
     aspect-ratio: 1;/*altezza = lunghezza*/
     justify-self: center;/*si mette al centro*/
 }
+
 
 #title {
     position: relative;
@@ -49,6 +55,7 @@ body {
     font-size: 3vh;
 }
 
+
 #barBox {
     position: relative;
     width: 100%;
@@ -56,13 +63,17 @@ body {
     display: grid;
     grid-template-rows: 100%;
     grid-template-columns: 75% 25%;
-    
+   
 }
+
+
 
 
 /*main*/
 
+
 #main {
+
 
     display: grid;
     grid-template-rows: 100% 1fr;
@@ -71,48 +82,80 @@ body {
     width: 100%;
     height: 100%;
     overflow-y: scroll;
-    
-    
+   
+   
 }
 
+
 #newsBox {
-    background-color: bisque;
     display: flex;
     flex-wrap: wrap;
     justify-content: center;
 }
 
+
 .news {
-    border: black;
-    
-    border-style: solid;
+    position: relative;
     height: 200px;
     width: 400px;
-    border-width: 10px;
-    border-radius: 10px;
     margin: 10px;
+    transition: 3s;
+    border-radius: 20px;
+    
+}
+
+
+.imgBox {
+    position: absolute;
+    background-image: url(../img/CL-Robocity-background.png);
+    height: 200px;
+    width: 400px;
     transition: 1s;
+    border-radius: 20px;
+    
+}
+
+.underBox {
+    border-radius: 20px;
+    height: 100%;
+    width: 100%;
     display: grid;
     grid-template-columns: 100%;
-    grid-template-rows: 1fr 240px;
-    overflow-y: hidden;
-    position: relative; /* Add this line */
-    z-index: 1;
+    grid-template-rows: min-content 1fr 20%;
 }
 
-.news:hover {
-
-    z-index: 2;
-    transform: scaleY(1.5);
+.newTitle {
+    display: flex;
+    justify-content: center;
+    font-size: 3vh;
 }
+
+
+
+.news:hover .imgBox{
+    transform: translateY(-200px);
+}
+
 
 .undertext {
-    max-width: 400px;
-    max-height: 200px;
-    transition: 1s;
+    margin: 4px;
+    overflow: hidden;
 }
-.undertext:hover {
-    transform: scaleY(0.7);
+
+.NButtonBox {
+    margin: 4px;
+    height: 100%;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+}
+
+.NButton {
+    height: min-content;
+    width: 100px;
+    padding: 5px;
+    display: flex;
+    justify-content: center;
 }
 
 
@@ -126,4 +169,26 @@ body {
     background-size: cover;
     background-attachment: fixed;
     transition: 3s;
+}
+
+
+@keyframes piazzo {
+    0% {
+        background-color: #f00;
+    }
+    20% {
+        background-color: #0f0;
+    }
+    40% {
+        background-color: #0ff;
+    }
+    60% {
+        background-color: #00f;
+    }
+    80% {
+        background-color: #f0f;
+    }
+    100% {
+        background-color: #f00;
+    }
 }
