@@ -8,7 +8,7 @@ import { dirLight, hemiLight } from "./assets/js/lights.js"
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js'
 //import CannonDebugger from "cannon-es-debugger"
 
-const Ibtn = [
+const btn = [
     document.getElementById("Iforward"),
     document.getElementById("Ibackwards"),
     document.getElementById("Ileft"),
@@ -322,7 +322,7 @@ function init() {
             if (bPhone) {
                 renderer.shadowMap.enabled = false
             } else {
-                renderer.shadowMap.enabled = true
+                renderer.shadowMap.enabled = false//true
             }
 
             dirBox.position.set(camera.position.x - startPos.x - 80, camera.position.y - startPos.y + 56, camera.position.z - startPos.z + 140);
