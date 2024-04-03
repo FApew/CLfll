@@ -8,12 +8,14 @@ import { dirLight, hemiLight } from "./assets/js/lights.js"
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js'
 //import CannonDebugger from "cannon-es-debugger"
 
-const btn = [
+const Ibtn = [
     document.getElementById("Iforward"),
     document.getElementById("Ibackwards"),
     document.getElementById("Ileft"),
     document.getElementById("Iright"),
 ]
+
+var btn = {w: 0, a: 0, s: 0, d: 0, shift: 0}
 
 const container = document.getElementById("main")
 
