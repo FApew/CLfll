@@ -49,7 +49,7 @@ app.get("/src/assets/model/robot.glb", (req, res) => {
 })
 
 app.get("/src/assets/model/key.glb", (req, res) => {
-    res.sendFile(__dirname + "/src/assets/model/tile.glb")
+    res.sendFile(__dirname + "/src/assets/model/key.glb")
 })
 
 app.get("/src/assets/model/brick.glb", (req, res) => {
