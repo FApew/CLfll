@@ -37,11 +37,11 @@ app.get("/src/assets/js/robot.js", (req, res) => {
 })
 
 app.get("/src/assets/js/plane.js", (req, res) => {
-    res.sendFile(__dirname + "/src/assets/js/robot.js")
+    res.sendFile(__dirname + "/src/assets/js/plane.js")
 })
 
 app.get("/src/assets/js/tiles.js", (req, res) => {
-    res.sendFile(__dirname + "/src/assets/js/robot.js")
+    res.sendFile(__dirname + "/src/assets/js/tiles.js")
 })
 
 app.get("/src/assets/model/robot.glb", (req, res) => {
@@ -49,11 +49,11 @@ app.get("/src/assets/model/robot.glb", (req, res) => {
 })
 
 app.get("/src/assets/model/tile.glb", (req, res) => {
-    res.sendFile(__dirname + "/src/assets/model/robot.glb")
+    res.sendFile(__dirname + "/src/assets/model/tile.glb")
 })
 
 app.get("/src/assets/model/brick.glb", (req, res) => {
-    res.sendFile(__dirname + "/src/assets/model/robot.glb")
+    res.sendFile(__dirname + "/src/assets/model/brick.glb")
 })
 
 for (let i = 0; i < 16; i++) {
