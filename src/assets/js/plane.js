@@ -24,5 +24,5 @@ for (let i = 0; i < position.count; i++) {
 
 gPlane.setAttribute('color', new Float32BufferAttribute(arrCol, 3))
 const mPlane = new MeshBasicMaterial({ vertexColors: true })
-export let plane = new Mesh(gPlane, mPlane)
+export const plane = new Mesh(gPlane, mPlane)
 plane.receiveShadow = true
