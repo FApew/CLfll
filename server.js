@@ -36,13 +36,33 @@ app.get("/src/assets/js/robot.js", (req, res) => {
     res.sendFile(__dirname + "/src/assets/js/robot.js")
 })
 
-for (let i = 0; i < 17; i++) {
-    app.get(`/src/assets/model/${i}.glb`, (req, res) => {
-        res.sendFile(__dirname + `/src/assets/model/${i}.glb`)
+app.get("/src/assets/js/plane.js", (req, res) => {
+    res.sendFile(__dirname + "/src/assets/js/robot.js")
+})
+
+app.get("/src/assets/js/tiles.js", (req, res) => {
+    res.sendFile(__dirname + "/src/assets/js/robot.js")
+})
+
+app.get("/src/assets/model/robot.glb", (req, res) => {
+    res.sendFile(__dirname + "/src/assets/model/robot.glb")
+})
+
+app.get("/src/assets/model/tile.glb", (req, res) => {
+    res.sendFile(__dirname + "/src/assets/model/robot.glb")
+})
+
+app.get("/src/assets/model/brick.glb", (req, res) => {
+    res.sendFile(__dirname + "/src/assets/model/robot.glb")
+})
+
+for (let i = 0; i < 16; i++) {
+    app.get(`/src/assets/model/missions/${i}.glb`, (req, res) => {
+        res.sendFile(__dirname + `/src/assets/model/missions/${i}.glb`)
     })
 }
 
-for (let i = 0; i < 10; i++) {
+for (let i = 0; i < 11; i++) {
     app.get(`/src/assets/model/letters/${i}.glb`, (req, res) => {
         res.sendFile(__dirname + `/src/assets/model/letters/${i}.glb`)
     })
@@ -53,7 +73,6 @@ for (let i = 0; i < 6; i++) {
         res.sendFile(__dirname + `/src/assets/img/${i}.png`)
     })
 }
-
 
 app.listen(8080, () => {
     console.log("App listening on https://localhost:8080/")

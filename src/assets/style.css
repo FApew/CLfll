@@ -4,16 +4,12 @@ body {
     overflow: hidden;
 }
 
-a {
-    color:"white";
-}
-
 #app {
     position: absolute;
     width: 100%;
     height: 100%;
     display: grid;
-    grid-template-rows: 5% 1fr;
+    grid-template-rows: minmax(35px, 5%) 1fr;
     grid-template-columns: 100%;
 }
 
@@ -24,21 +20,21 @@ a {
 }
 
 #bar {
-    position: relative;
-    background-color: rgb(27, 100, 100);
-    color: white;
     width: 100%;
     height: 100%;
+    background-color: #2F8FD8;
     display: grid;
     grid-template-rows: 100%;
-    grid-template-columns: 3% 10% 1fr;
+    grid-template-columns: 3% 20% 1fr;
 }
 
 #logoBox {
+    box-sizing: border-box;
     position: relative;
     height: 100%;
-    aspect-ratio: 1;/*altezza = lunghezza*/
-    justify-self: center;/*si mette al centro*/
+    aspect-ratio: 1;
+    justify-self: center;
+    padding: 5px;
 }
 
 #title {
@@ -46,9 +42,11 @@ a {
     width: 100%;
     height: 100%;
     display: flex;
-    justify-content: start;/*mette al centro quello che ha dentro horizontal*/
     align-items: center;
-    font-size: 3vh;
+    font-size: 4vh;
+    color: white;
+    font-family: "Roboto Condensed", sans-serif;
+    margin-left: 10px;
 }
 
 #barBox {
@@ -58,7 +56,6 @@ a {
     display: grid;
     grid-template-rows: 100%;
     grid-template-columns: 75% 25%;
-    
 }
 
 #staticLink {
@@ -69,7 +66,6 @@ a {
     justify-content: end;
     align-items: center;
     font-size: 2.5vh;
-   
 }
 
 #schooLink {
@@ -125,9 +121,6 @@ a {
 #teamButton:hover{
     color: #001F3F;
     background-color: #fff;
-}
-=======
-    font-size: 2.5vh;
 }
 
 #overlay {

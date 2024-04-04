@@ -6,6 +6,9 @@
     <title>CL-ROBOCITY</title>
     <link rel="stylesheet" href="src/assets/style.css">
     <link rel="icon" href="src/assets/img/5.png"/>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto+Condensed:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
     <script type="importmap">
         {
           "imports": {
@@ -14,12 +17,17 @@
           }
         }
     </script>
+    <script type="module">
+        import * as THREE from "three"
+    </script>
 </head>
 <body>
     <div id="app">
         <div id="bar">
-            <div id="logoBox"></div>
-            <div id="title">CL-Robocity</div>
+            <div id="logoBox">
+                <img src="src/assets/img/5.png" style="width: 100%; height: 100%;">
+            </div>
+            <div id="title"><b>CL-ROBOCITY</b></div>
             <div id="barBox">
                 <div id="staticLink">
                     <button id="teamButton" type="button">Sito statico</button> 

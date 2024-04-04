@@ -1,18 +1,18 @@
-import * as THREE from "three"
+import {Group, MeshStandardMaterial, DoubleSide} from "three"
 import * as CANNON from 'https://cdn.jsdelivr.net/npm/cannon-es@0.20.0/+esm'
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js'
 
 const loader = new GLTFLoader()
 
-export let robot = new THREE.Group()
-loader.load("../src/assets/model/0.glb", (gltf) => {
+export let robot = new Group()
+loader.load("../src/assets/model/robot.glb", (gltf) => {
     let obj = gltf.scene;
     obj.scale.set(1, 1, 1);
     obj.traverse((child) => {
         if (child.isMesh) {
             if (child.material) {
-                child.material = new THREE.MeshStandardMaterial({ color: child.material.color, map: child.material.map })
-                child.material.side = THREE.DoubleSide
+                child.material = new MeshStandardMaterial({ color: child.material.color, map: child.material.map })
+                child.material.side = DoubleSide
             }
             child.geometry.computeVertexNormals()
             child.castShadow = true
