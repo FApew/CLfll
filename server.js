@@ -48,7 +48,7 @@ app.get("/src/assets/model/robot.glb", (req, res) => {
     res.sendFile(__dirname + "/src/assets/model/robot.glb")
 })
 
-app.get("/src/assets/model/tile.glb", (req, res) => {
+app.get("/src/assets/model/key.glb", (req, res) => {
     res.sendFile(__dirname + "/src/assets/model/tile.glb")
 })
 
@@ -68,7 +68,13 @@ for (let i = 0; i < 11; i++) {
     })
 }
 
-for (let i = 0; i < 6; i++) {
+for (let i = 0; i < 11; i++) {
+    app.get(`/src/assets/model/minif/${i}.glb`, (req, res) => {
+        res.sendFile(__dirname + `/src/assets/model/minif/${i}.glb`)
+    })
+}
+
+for (let i = 0; i <= 6; i++) {
     app.get(`/src/assets/img/${i}.png`, (req, res) => {
         res.sendFile(__dirname + `/src/assets/img/${i}.png`)
     })

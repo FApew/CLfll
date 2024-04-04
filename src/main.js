@@ -6,6 +6,7 @@ import { misPos, Piles } from "./assets/js/data.js"
 import { robot, cRobot, chasBody } from "./assets/js/robot.js"
 import { dirLight, hemiLight } from "./assets/js/lights.js"
 import { plane } from "./assets/js/plane.js"
+import { tiles, arrTile} from "./assets/js/tiles.js"
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js'
 import CannonDebugger from 'https://cdn.jsdelivr.net/npm/cannon-es-debugger@1.0.0/+esm'
 
@@ -58,17 +59,20 @@ function init() {
             gravity: new CANNON.Vec3(0, -9.806, 0),
         })
 
-        /*let size = 200
-        const fllField = new THREE.Mesh(
-            new THREE.BoxGeometry(size, 0.01, size/16*9),
+        let size = 40
+        const arrowTxt = new THREE.Mesh(
+            new THREE.BoxGeometry(size, 0.01, size*92/357),
             new THREE.MeshStandardMaterial({ 
-                map: new THREE.TextureLoader().load("../src/assets/img/0.png"),
-                flatShading: true
+                map: new THREE.TextureLoader().load("../src/assets/img/6.png"),
+                flatShading: true,
+                transparent: true,
+                opacity: .8
             })
         )
-        fllField.receiveShadow = true
-        fllField.position.set(0, 0.01, 0);
-        scene.add(fllField)*/
+        arrowTxt.receiveShadow = true
+        arrowTxt.position.set(35, 0.01, 25)
+        arrowTxt.rotation.set(0, Math.PI*7/4, 0);
+        scene.add(arrowTxt)
 
         scene.add(plane)
 
@@ -79,43 +83,51 @@ function init() {
         cPlane.quaternion.setFromEuler(-Math.PI / 2, 0, 0)
         world.addBody(cPlane)
 
-        const tiles = new THREE.Group()
-
-        for (let i = 0; i < tileNum; i++) {
-            loader.load("../src/assets/model/tile.glb", (gltf) => {
-                let obj = gltf.scene;
-                obj.scale.set(Math.random() > 0.5 ? 3 : 4.5, 1, Math.random() > 0.5 ? 3 : 4.5);
+        //* ###### KEYS #######
+        const keys = new THREE.Group()
+        let cKeys = [], keyArr = []
+        
+        for (let i = 0; i < 4; i++) {
+            loader.load("../src/assets/model/key.glb", (gltf) => {
+                const obj = gltf.scene
+                obj.scale.set(2,2,2)
                 obj.traverse((child) => {
                     if (child.isMesh) {
-                        if (child.material) {
-                            child.material = new THREE.MeshStandardMaterial({ color: child.material.color, map: child.material.map })
-                            child.material.side = THREE.DoubleSide
-                        }
-                        child.geometry.computeVertexNormals()
+                        const newMaterial = new THREE.MeshStandardMaterial({
+                            color: child.material.color,
+                            map: child.material.map,
+                            side: THREE.DoubleSide
+                        })
+                        child.material = newMaterial
                         child.castShadow = true
                         child.receiveShadow = true
+                        child.geometry.computeVertexNormals()
                     }
                 })
-                
-                obj.position.set(-20-8*i+(Math.random()*6-3), 0, 20+8*i+(Math.random()*6-3))
-                tiles.add(obj)
 
                 let box = new THREE.Box3().setFromObject(obj)
                 let size = new THREE.Vector3()
                 box.getSize(size)
 
-                const ctile = new CANNON.Body({
+                keyArr[i] = obj
+                keys.add(obj)
+
+                const cKey = new CANNON.Body({
                     shape: new CANNON.Box(new CANNON.Vec3(size.x/2, size.y/2, size.z/2)),
-                    position: new CANNON.Vec3(obj.position.x, obj.position.y, obj.position.z),
-                    type: CANNON.Body.STATIC
+                    position: new CANNON.Vec3(i == 2 ? 31.5 : i == 0 || i == 1 ? 41.5 : 36.5, size.y/2, i == 1 || i == 2 ? 16.5 : i == 0 ? 26.5 : 21.5),
+                    mass: .01
                 })
-                //cLett.quaternion.setFromEuler(Math.PI/2, 0, Math.PI/4)
-                world.addBody(ctile)
+                cKey.quaternion.setFromEuler(0, Math.PI/4+Math.PI*i/2, 0)
+                cKey.sleep()
+                world.addBody(cKey)
+            
+                cKeys[i] = cKey
             })
         }
+        //* #######################
 
+        //* ###### MISSIONS #######
         const missions = new THREE.Group()
-
         let cMissArr = [], missArr = []
 
         for (let i = 9; i < 10; i++) {
@@ -160,7 +172,9 @@ function init() {
                 cMissArr[i] = cMiss
             })
         }
+        //* #######################
 
+        //* ####### LETTERS #######
         let Letters = new THREE.Group(), cLetts = [], LettArr = []
 
         for (let i = 0; i < 11; i++) {
@@ -204,11 +218,12 @@ function init() {
                 cLetts[i] = cLett
             })
         }
+        //* #######################
 
+        //* ######## PILES ########
         let idx = 0
         let bricks = new THREE.Group()
-        let arrBricks = []
-        let cBricks = []
+        let arrBricks = [], cBricks = []
 
         for (let i = 0; i < Piles.length; i++) {
             for (let j = 0; j < Piles[i].n; j++) {
@@ -237,7 +252,7 @@ function init() {
                         size.y -= .1
                         box.getSize(size)
                         
-                        obj.position.set(Piles[i].p.x+(9.6*k+4.8*j)*Math.sin(Piles[i].r), size.z/2+3*1.1*j, Piles[i].p.z+(9.6*k+4.8*j)*Math.cos(Piles[i].r))
+                        obj.position.set(Piles[i].p.x+(9.6*k+4.8*j)*Math.sin(Piles[i].r), size.z/2+3*1*j, Piles[i].p.z+(9.6*k+4.8*j)*Math.cos(Piles[i].r))
                         obj.rotation.y = Piles[i].r+Math.PI/2
                         bricks.add(obj)
                         arrBricks[idx] = obj
@@ -257,12 +272,65 @@ function init() {
                 }
             }
         }
+        //* #######################
+
+        //* ##### MINIFIGURES #####
+        let minif = new THREE.Group()
+        let miniArr = [], cMinis = []
+
+        for (let i = 0; i < 1; i++) {
+            loader.load(`../src/assets/model/minif/${idx}.glb`, (gltf) => {
+                const obj = gltf.scene
+                
+                obj.traverse((child) => {
+                    if (child.isMesh) {
+                        const newMaterial = new THREE.MeshStandardMaterial({
+                            color: child.material.color,
+                            map: child.material.map,
+                            side: THREE.DoubleSide
+                        })
+                        child.material = newMaterial
+                        child.castShadow = true
+                        child.receiveShadow = true
+                        child.geometry.computeVertexNormals()
+                    }
+                })
+
+                obj.scale.set(3,3,3)
+
+                let box = new THREE.Box3().setFromObject(obj)
+                let size = new THREE.Vector3()
+                box.getSize(size)
+
+                obj.position.set(-20,0,-20)
+                obj.rotation.set(0,0,0)
+                minif.add(obj)
+                miniArr[i] = obj
+
+                const cMini = new CANNON.Body({
+                    shape: new CANNON.Box(new CANNON.Vec3(size.x/2, size.y/2, size.z/2)),
+                    position: new CANNON.Vec3(15,size.y/2,-30),
+                    mass: .01
+                })
+                cMini.quaternion.setFromEuler(0,-Math.PI/12,0)
+                world.addBody(cMini)
+                cMini.sleep()
+                cMinis[i] = cMini
+            })
+        }
+        //* #######################
 
         scene.add(bricks)
         scene.add(missions)
         scene.add(Letters)
         scene.add(robot)
         scene.add(tiles)
+        scene.add(keys)
+        scene.add(minif)
+
+        for (let i = 0; i < arrTile.length; i++) {
+            world.addBody(arrTile[i])
+        }
 
         cRobot.addToWorld(world)
 
@@ -462,7 +530,29 @@ function init() {
                     let obj = arrBricks[i], cObj = cBricks[i]
                     obj.position.copy(cObj.position)
                     obj.quaternion.copy(cObj.quaternion)
-                    if (cObj.velocity.length() < 0.003) {
+                    if (cObj.velocity.length() < 0.01) {
+                        cObj.sleep()
+                    }
+                } catch (e) {}
+            }
+
+            for (let i = 0; i < miniArr.length; i++) {
+                try {
+                    let obj = miniArr[i], cObj = cMinis[i]
+                    obj.position.copy(cObj.position)
+                    obj.quaternion.copy(cObj.quaternion)
+                    if (cObj.velocity.length() < 0.01) {
+                        cObj.sleep()
+                    }
+                } catch (e) {}
+            }
+
+            for (let i = 0; i < keyArr.length; i++) {
+                try {
+                    let obj = keyArr[i], cObj = cKeys[i]
+                    obj.position.copy(cObj.position)
+                    obj.quaternion.copy(cObj.quaternion)
+                    if (cObj.velocity.length() < 0.01) {
                         cObj.sleep()
                     }
                 } catch (e) {}
@@ -473,13 +563,13 @@ function init() {
                     let obj = LettArr[i], cObj = cLetts[i]
                     obj.position.copy(cObj.position)
                     obj.quaternion.copy(cObj.quaternion)
-                    if (cObj.velocity.length() < 0.001) {
+                    if (cObj.velocity.length() < 0.01) {
                         cObj.sleep()
                     }
                 } catch (e) {}
             }
             
-            cannonDebugger.update()
+            //cannonDebugger.update()
             //camera.position.set(-13.66457673308406, 0.12664596784900795, 15.39896081993017)
             //camera.rotation.set(-0.23905961802462464, -0.5525403285779773, -0.12722594623065786)
             renderer.render(scene, camera)
