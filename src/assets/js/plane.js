@@ -1,4 +1,4 @@
-import { Vector3, Color, PlaneGeometry, Float32BufferAttribute, SRGBColorSpace, Mesh, MeshBasicMaterial } from "three"
+import { Vector3, Color, PlaneGeometry, Float32BufferAttribute, SRGBColorSpace, Mesh, MeshStandardMaterial } from "three"
 
 const vtx = new Vector3()
 const col = new Color()
@@ -23,6 +23,6 @@ for (let i = 0; i < position.count; i++) {
 }
 
 gPlane.setAttribute('color', new Float32BufferAttribute(arrCol, 3))
-const mPlane = new MeshBasicMaterial({ vertexColors: true })
+const mPlane = new MeshStandardMaterial({ vertexColors: true, transparent: true })
 export const plane = new Mesh(gPlane, mPlane)
 plane.receiveShadow = true

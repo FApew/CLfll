@@ -1,14 +1,16 @@
 import * as THREE from "three"
-import * as CANNON from 'https://cdn.jsdelivr.net/npm/cannon-es@0.20.0/+esm'
-import WebGL from 'three/addons/capabilities/WebGL.js'
-import { OrbitControls } from 'three/addons/controls/OrbitControls.js'
+import * as CANNON from "https://cdn.jsdelivr.net/npm/cannon-es@0.20.0/+esm"
+import WebGL from "three/addons/capabilities/WebGL.js"
+import { OrbitControls } from "three/addons/controls/OrbitControls.js"
 import { misPos, Piles } from "./assets/js/data.js"
 import { robot, cRobot, chasBody } from "./assets/js/robot.js"
 import { dirLight, hemiLight } from "./assets/js/lights.js"
 import { plane } from "./assets/js/plane.js"
-import { tiles, arrTile} from "./assets/js/tiles.js"
-import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js'
-import CannonDebugger from 'https://cdn.jsdelivr.net/npm/cannon-es-debugger@1.0.0/+esm'
+import { tiles } from "./assets/js/tiles.js"
+import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js"
+import CannonDebugger from "https://cdn.jsdelivr.net/npm/cannon-es-debugger@1.0.0/+esm"
+
+const barEl = document.getElementById("bar")
 
 const Ibtn = [
     document.getElementById("Iforward"),
@@ -22,9 +24,15 @@ const container = document.getElementById("main")
 const scene = new THREE.Scene()
 const loader = new GLTFLoader()
 
-const mNumber = 0, speed = {s: 15, t: 10}, tileNum = 15
+const mNumber = 0, speed = {s: 15, t: 10}, col1 = new THREE.Color(0x38c8ff), col2 = new THREE.Color(0xf2a200), col3 = new THREE.Color(0x404040) 
 
-let bPhone = window.innerWidth < 768 ? true : false
+let bPhone = window.innerWidth < 768 ? true : false, prevDis = 0, prevDis1 = 0, prevDis2 = 0, prevDis3 = 0, arrCol = [], mainCol
+
+let colOffset = []
+
+for (let i = 0; i < plane.geometry.attributes.position.count; i++) {
+    colOffset.push(Math.random() * 0.1 - 0.05)
+}
 
 function init() {
     if (WebGL.isWebGLAvailable()) {
@@ -36,7 +44,7 @@ function init() {
         camera.far = 500
         camera.updateProjectionMatrix() 
 
-        const renderer = new THREE.WebGLRenderer({ antialias: true})
+        const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: "high-performance"})
         renderer.setSize( container.clientWidth, container.clientHeight)
         container.appendChild(renderer.domElement)
         renderer.shadowMap.enabled = true
@@ -82,6 +90,94 @@ function init() {
         })
         cPlane.quaternion.setFromEuler(-Math.PI / 2, 0, 0)
         world.addBody(cPlane)
+
+        let fSize = 107
+        const fllField = new THREE.Mesh(
+            new THREE.BoxGeometry(fSize, 0.01, fSize/16*9),
+            new THREE.MeshStandardMaterial({ 
+                map: new THREE.TextureLoader().load("../src/assets/img/0.png"),
+                flatShading: true
+            })
+        )
+        fllField.receiveShadow = true
+        fllField.position.set(-320, .581, -160)
+        fllField.rotation.set(0,-Math.PI*23/12,0)
+        scene.add(fllField)
+
+        //* ### SMALL ROBOT ###
+
+        const points = [
+            new THREE.Vector3(-270, .581, -150),
+            new THREE.Vector3(-290, .581, -180),
+            new THREE.Vector3(-350, .581, -163),
+            new THREE.Vector3(-350, .581, -140),
+            new THREE.Vector3(-330, .581, -145),
+            new THREE.Vector3(-300, .581, -150),
+        ]
+        const path = new THREE.CatmullRomCurve3(points, true)
+        /*const pathG = new THREE.BufferGeometry().setFromPoints(path.getPoints(50))
+        const pathM = new THREE.LineBasicMaterial({color: 0x000000})
+        const pathO = new THREE.Line(pathG, pathM)
+        scene.add(pathO)*/
+
+        const smallRobot = new THREE.Group()
+
+        loader.load("../src/assets/model/robot.glb", (gltf) => {
+            const obj = gltf.scene
+            obj.scale.set(.5,.5,.5)
+
+            obj.traverse((child) => {
+                if (child.isMesh) {
+                    const newMaterial = new THREE.MeshStandardMaterial({
+                        color: child.material.color,
+                        map: child.material.map,
+                        side: THREE.DoubleSide
+                    })
+                    child.material = newMaterial
+                    child.castShadow = true
+                    child.receiveShadow = true
+                    child.geometry.computeVertexNormals()
+                }
+            })
+
+            let box = new THREE.Box3().setFromObject(obj)
+            let size = new THREE.Vector3()
+            box.getSize(size)
+
+            obj.position.set(0,size.y/2, 0)
+            obj.rotation.set(0,Math.PI,0)
+            
+            smallRobot.add(obj)
+        })
+        loader.load("../src/assets/model/minif/aie.glb", (gltf) => {
+            const obj = gltf.scene
+            let sc = 1.5
+            obj.scale.set(sc,sc,sc)
+
+            obj.traverse((child) => {
+                if (child.isMesh) {
+                    const newMaterial = new THREE.MeshStandardMaterial({
+                        color: child.material.color,
+                        map: child.material.map,
+                        side: THREE.DoubleSide
+                    })
+                    child.material = newMaterial
+                    child.castShadow = true
+                    child.receiveShadow = true
+                    child.geometry.computeVertexNormals()
+                }
+            })
+
+            let box = new THREE.Box3().setFromObject(obj)
+            let size = new THREE.Vector3()
+            box.getSize(size)
+
+            obj.position.set(0,6,-1.5)
+            
+            smallRobot.add(obj)
+        })
+
+        //*####################
 
         //* ###### KEYS #######
         const keys = new THREE.Group()
@@ -278,7 +374,7 @@ function init() {
         let minif = new THREE.Group()
         let miniArr = [], cMinis = []
 
-        for (let i = 0; i < 1; i++) {
+        /*for (let i = 0; i < 1; i++) {
             loader.load(`../src/assets/model/minif/${idx}.glb`, (gltf) => {
                 const obj = gltf.scene
                 
@@ -317,7 +413,117 @@ function init() {
                 cMini.sleep()
                 cMinis[i] = cMini
             })
+        }*/
+        //* #######################
+
+
+        //* ####### STATUES #######
+        let statue = new THREE.Group()
+    
+        for (let i = 0; i < 2; i++) {
+            loader.load("../src/assets/model/base.glb", (gltf) => {
+                const obj = gltf.scene
+                
+                obj.traverse((child) => {
+                    if (child.isMesh) {
+                        const newMaterial = new THREE.MeshStandardMaterial({
+                            color: child.material.color,
+                            map: child.material.map,
+                            side: THREE.DoubleSide
+                        })
+                        child.material = newMaterial
+                        child.castShadow = true
+                        child.receiveShadow = true
+                        child.geometry.computeVertexNormals()
+                    }
+                })
+
+                obj.scale.set(6,3,6)
+
+                let box = new THREE.Box3().setFromObject(obj)
+                let size = new THREE.Vector3()
+                box.getSize(size)
+
+                obj.position.set(-110+80*i,0,30+80*i)
+                obj.rotation.set(0,-Math.PI/4,0)
+                statue.add(obj)
+
+                const cBase = new CANNON.Body({
+                    shape: new CANNON.Box(new CANNON.Vec3(size.x/2, size.y/2, size.z/2)),
+                    position: new CANNON.Vec3(obj.position.x,size.y/2,obj.position.z),
+                    type: CANNON.Body.STATIC
+                })
+                cBase.quaternion.setFromEuler(0,-Math.PI/4,0)
+                world.addBody(cBase)
+            })
+            loader.load(`../src/assets/model/statue${i+1}.glb`, (gltf) => {
+                const obj = gltf.scene
+                
+                obj.traverse((child) => {
+                    if (child.isMesh) {
+                        const newMaterial = new THREE.MeshStandardMaterial({
+                            color: `#${col2.getHexString()}`,
+                            map: child.material.map,
+                            side: THREE.DoubleSide
+                        })
+                        child.material = newMaterial
+                        child.castShadow = true
+                        child.receiveShadow = true
+                        child.geometry.computeVertexNormals()
+                    }
+                })
+                obj.scale.set(1.5,1.5,1.5)
+
+                let box = new THREE.Box3().setFromObject(obj)
+                let size = new THREE.Vector3()
+                box.getSize(size)
+
+                obj.position.set(-110+80*i,size.y/2+11.48,30+80*i)
+                obj.rotation.set(0,-Math.PI/6,0)
+                statue.add(obj)
+            })
         }
+
+        //* #######################
+
+        //* ####### TABLE #######
+        loader.load("../src/assets/model/table.glb", (gltf) => {
+            const obj = gltf.scene
+            
+            obj.traverse((child) => {
+                if (child.isMesh) {
+                    const newMaterial = new THREE.MeshStandardMaterial({
+                        color: child.material.color,
+                        map: child.material.map,
+                        side: THREE.DoubleSide
+                    })
+                    child.material = newMaterial
+                    child.castShadow = true
+                    child.receiveShadow = true
+                    child.geometry.computeVertexNormals()
+                }
+            })
+
+            let sc = 30
+            obj.scale.set(sc,sc,sc)
+
+            let box = new THREE.Box3().setFromObject(obj)
+            let size = new THREE.Vector3()
+            box.getSize(size)
+
+            obj.position.set(-320,-size.y/2,-160)
+            obj.rotation.set(0,-Math.PI*5/12,0)
+            scene.add(obj)
+
+            const cBase = new CANNON.Body({
+                shape: new CANNON.Box(new CANNON.Vec3(size.x/2, size.y/2, size.z/2)),
+                position: new CANNON.Vec3(obj.position.x,0,obj.position.z),
+                type: CANNON.Body.STATIC
+            })
+            cBase.quaternion.setFromEuler(0,obj.rotation.y,0)
+            world.addBody(cBase)
+        })
+
         //* #######################
 
         scene.add(bricks)
@@ -327,10 +533,23 @@ function init() {
         scene.add(tiles)
         scene.add(keys)
         scene.add(minif)
+        scene.add(statue)
+        scene.add(smallRobot)
 
-        for (let i = 0; i < arrTile.length; i++) {
-            world.addBody(arrTile[i])
-        }
+        let temp1 = new THREE.Mesh(
+            new THREE.BoxGeometry(1,1,1),
+            new THREE.MeshBasicMaterial({color: 0xff0000})
+        )
+        temp1.position.set(-290, 1, -90)
+        
+        let temp2 = new THREE.Mesh(
+            new THREE.BoxGeometry(1,1,1),
+            new THREE.MeshBasicMaterial({color: 0xff0000})
+        )
+        temp2.position.set(90, 1, 290)
+
+        scene.add(temp1)
+        scene.add(temp2)
 
         cRobot.addToWorld(world)
 
@@ -369,7 +588,7 @@ function init() {
                     btn.d = 1
                     break
                 }
-                
+
                 case "Shift": {
                     btn.shift = 1
                     break
@@ -428,7 +647,6 @@ function init() {
             e.preventDefault()
         })
 
-
         Ibtn[2].addEventListener("touchstart", (e) => {
             btn.a = 1
             e.preventDefault()
@@ -462,12 +680,18 @@ function init() {
         cPlane.material = robotMaterial
 
         const cannonDebugger = new CannonDebugger(scene, world, {})
+        let t0 = new Date().getTime()
 
         function animate() {
+            let dt = new Date().getTime() - t0
             if (bPhone) {
                 renderer.shadowMap.enabled = false
+                camera.fov = 50
+                camera.updateProjectionMatrix()
             } else {
-                renderer.shadowMap.enabled = false//true
+                renderer.shadowMap.enabled = false
+                camera.fov = 30
+                camera.updateProjectionMatrix()
             }
 
             dirBox.position.set(camera.position.x - startPos.x - 80, camera.position.y - startPos.y + 56, camera.position.z - startPos.z + 140);
@@ -479,8 +703,8 @@ function init() {
             cRobot.setWheelForce(0, 1)
 
             if (btn.shift) {
-                k1 *= 3//2
-                k2 *= 3//2
+                k1 *= 3
+                k2 *= 3
             }
             
             if (btn.d && !btn.shift) {
@@ -568,7 +792,101 @@ function init() {
                     }
                 } catch (e) {}
             }
+
+            let t = (dt/2000 % points.length) / points.length
+            let pos = path.getPointAt(t)
+            smallRobot.position.copy(pos)
+            smallRobot.lookAt(pos.clone().add(path.getTangentAt(t)))
             
+            let position = plane.geometry.attributes.position
+            let dis1 = temp1.position.distanceTo(robot.position)
+            let dis2 = temp2.position.distanceTo(robot.position)
+
+            if (dis1 < 200) {
+                if (dis1 < 150) {
+                    if (prevDis > 150) {
+                        arrCol = []
+                        mainCol = col2
+                        let c = col2.getHSL(col2)
+                        for (let i = 0; i < position.count; i++) {
+                            let col = new THREE.Color()
+                            col.setHSL(c.h, c.s, c.l+colOffset[i], THREE.SRGBColorSpace) //#38A8FF
+                            arrCol.push(col.r, col.g, col.b)
+                        }
+                    }
+                } else {
+                    if (Math.abs(prevDis1 - dis1) > 10) {
+                        arrCol = []
+                        let p = 1-(dis1-150) / 50
+                        let mix = new THREE.Color().lerpColors(col1, col2, p)
+                        mix.getHSL(mix)
+                        mainCol = mix
+                        for (let i = 0; i < position.count; i++) {
+                            let col = new THREE.Color()
+                            col.setHSL(mix.h, mix.s, mix.l+colOffset[i], THREE.SRGBColorSpace) //#38A8FF
+                            arrCol.push(col.r, col.g, col.b)
+                        }
+                        prevDis1 = dis1
+                    }
+                }
+            } else {
+                if (prevDis < 200) {
+                    arrCol = []
+                    mainCol = col1
+                    for (let i = 0; i < position.count; i++) {
+                        let col = new THREE.Color()
+                        let c = col1.getHSL(col1)
+                        col.setHSL(c.h, c.s, c.l+colOffset[i], THREE.SRGBColorSpace) //#38A8FF
+                        arrCol.push(col.r, col.g, col.b)
+                    }
+                }
+            }
+            prevDis = dis1
+
+            if (dis2 < 200) {
+                if (dis2 < 150) {
+                    if (prevDis2 > 150) {
+                        arrCol = []
+                        mainCol = col3
+                        let c = col3.getHSL(col3)
+                        for (let i = 0; i < position.count; i++) {
+                            let col = new THREE.Color()
+                            col.setHSL(c.h, c.s, c.l+colOffset[i], THREE.SRGBColorSpace) //#38A8FF
+                            arrCol.push(col.r, col.g, col.b)
+                        }
+                    }
+                } else {
+                    if (Math.abs(prevDis3 - dis2) > 10) {
+                        arrCol = []
+                        let p = 1-(dis2-150) / 50
+                        let mix = new THREE.Color().lerpColors(col1, col3, p)
+                        mix.getHSL(mix)
+                        mainCol = mix
+                        for (let i = 0; i < position.count; i++) {
+                            let col = new THREE.Color()
+                            col.setHSL(mix.h, mix.s, mix.l+colOffset[i], THREE.SRGBColorSpace) //#38A8FF
+                            arrCol.push(col.r, col.g, col.b)
+                        }
+                        prevDis3 = dis2
+                    }
+                }
+            } else {
+                if (prevDis2 < 150) {
+                    arrCol = []
+                    mainCol = col1
+                    for (let i = 0; i < position.count; i++) {
+                        let col = new THREE.Color()
+                        let c = col1.getHSL(col1)
+                        col.setHSL(c.h, c.s, c.l+colOffset[i], THREE.SRGBColorSpace) //#38A8FF
+                        arrCol.push(col.r, col.g, col.b)
+                    }
+                }
+            }
+            prevDis2 = dis2
+
+            plane.geometry.setAttribute('color', new THREE.Float32BufferAttribute(arrCol, 3))
+            barEl.style.backgroundColor = `#${mainCol.getHexString()}`
+
             //cannonDebugger.update()
             //camera.position.set(-13.66457673308406, 0.12664596784900795, 15.39896081993017)
             //camera.rotation.set(-0.23905961802462464, -0.5525403285779773, -0.12722594623065786)

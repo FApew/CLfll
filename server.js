@@ -56,6 +56,25 @@ app.get("/src/assets/model/brick.glb", (req, res) => {
     res.sendFile(__dirname + "/src/assets/model/brick.glb")
 })
 
+app.get("/src/assets/model/base.glb", (req, res) => {
+    res.sendFile(__dirname + "/src/assets/model/base.glb")
+})
+
+
+app.get("/src/assets/model/statue1.glb", (req, res) => {
+    res.sendFile(__dirname + "/src/assets/model/statue1.glb")
+})
+
+
+app.get("/src/assets/model/table.glb", (req, res) => {
+    res.sendFile(__dirname + "/src/assets/model/table.glb")
+})
+
+app.get("/src/assets/model/minif/aie.glb", (req, res) => {
+    res.sendFile(__dirname + "/src/assets/model/minif/aie.glb")
+})
+
+
 for (let i = 0; i < 16; i++) {
     app.get(`/src/assets/model/missions/${i}.glb`, (req, res) => {
         res.sendFile(__dirname + `/src/assets/model/missions/${i}.glb`)
