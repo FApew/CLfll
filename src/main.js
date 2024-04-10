@@ -9,6 +9,7 @@ import { plane } from "./assets/js/plane.js"
 import { tiles } from "./assets/js/tiles.js"
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js"
 import CannonDebugger from "https://cdn.jsdelivr.net/npm/cannon-es-debugger@1.0.0/+esm"
+import Stats from 'three/addons/libs/stats.module.js';
 
 const barEl = document.getElementById("bar")
 
@@ -46,9 +47,10 @@ function init() {
 
         const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: "high-performance"})
         renderer.setSize( container.clientWidth, container.clientHeight)
+        renderer.setPixelRatio(window.devicePixelRatio )
         container.appendChild(renderer.domElement)
-        renderer.shadowMap.enabled = true
-        renderer.shadowMap.type = THREE.PCFSoftShadowMap
+        //renderer.shadowMap.enabled = true
+        //renderer.shadowMap.type = THREE.PCFSoftShadowMap
         renderer.clearColor("black")
 
         const controls = new OrbitControls( camera, renderer.domElement)
@@ -100,7 +102,7 @@ function init() {
             })
         )
         fllField.receiveShadow = true
-        fllField.position.set(-320, .581, -160)
+        fllField.position.set(-320, .582, -160)
         fllField.rotation.set(0,-Math.PI*23/12,0)
         scene.add(fllField)
 
@@ -122,11 +124,11 @@ function init() {
 
         const smallRobot = new THREE.Group()
 
-        loader.load("../src/assets/model/robot.glb", (gltf) => {
+        loader.load("../src/assets/model/mini.glb", (gltf) => {
             const obj = gltf.scene
             obj.scale.set(.5,.5,.5)
 
-            obj.traverse((child) => {
+            /*obj.traverse((child) => {
                 if (child.isMesh) {
                     const newMaterial = new THREE.MeshStandardMaterial({
                         color: child.material.color,
@@ -134,11 +136,9 @@ function init() {
                         side: THREE.DoubleSide
                     })
                     child.material = newMaterial
-                    child.castShadow = true
-                    child.receiveShadow = true
                     child.geometry.computeVertexNormals()
                 }
-            })
+            })*/
 
             let box = new THREE.Box3().setFromObject(obj)
             let size = new THREE.Vector3()
@@ -233,7 +233,7 @@ function init() {
                 const obj = gltf.scene
                 let sc = 0.7
                 obj.scale.set(sc, sc, sc)
-                obj.traverse((child) => {
+                /*obj.traverse((child) => {
                     if (child.isMesh) {
                         const newMaterial = new THREE.MeshStandardMaterial({
                             color: child.material.color,
@@ -245,14 +245,14 @@ function init() {
                         child.receiveShadow = true
                         child.geometry.computeVertexNormals()
                     }
-                })
+                })*/
                 Miss.add(obj)
 
                 let box = new THREE.Box3().setFromObject(obj)
                 let size = new THREE.Vector3()
                 box.getSize(size)
 
-                Miss.position.set(misPos[i].p.x, /*size.y/2*/0, misPos[i].p.z)
+                Miss.position.set(misPos[i].p.x, size.y/2, misPos[i].p.z)
                 Miss.rotation.y = misPos[i].r
                 missArr[i] = Miss
                 missions.add(Miss)
@@ -532,7 +532,6 @@ function init() {
         //* #######################
 
         scene.add(bricks)
-        //scene.add(missions)
         scene.add(Letters)
         scene.add(robot)
         scene.add(tiles)
@@ -688,13 +687,25 @@ function init() {
 
         if (bPhone) {
             renderer.shadowMap.enabled = false
+            renderer.setPixelRatio(window.devicePixelRatio * .8)
             camera.fov = 50
+            /*camera.near = 10
+            camera.far = 300*/
             camera.updateProjectionMatrix()
         } else {
             renderer.shadowMap.enabled = false
+            renderer.setPixelRatio(window.devicePixelRatio )
             camera.fov = 30
             camera.updateProjectionMatrix()
+            scene.add(missions)
         }
+
+        let stats = new Stats()
+        stats.domElement.style.position = 'absolute';
+		stats.domElement.style.top = '0px';
+        container.appendChild( stats.dom )
+
+        let pt = Date.now()
 
         function animate() {
             dirBox.position.set(camera.position.x - startPos.x - 80, camera.position.y - startPos.y + 56, camera.position.z - startPos.z + 140);
@@ -739,8 +750,16 @@ function init() {
                 camera.rotation.set(-0.57,0,0)
             }
 
-            world.step(0.1)
-
+            let dt = Date.now()
+            let d = Math.abs(pt - dt)
+            if (d > 30 || bPhone) {
+                world.step(1/60, d)
+            } else {
+                world.step(0.1)
+            }
+            
+            pt = dt
+            
             robot.position.copy(chasBody.position)
             robot.quaternion.copy(chasBody.quaternion)
 
@@ -793,17 +812,23 @@ function init() {
                     }
                 } catch (e) {}
             }
+
+            /*let t = (Date.now() / 1500 % points.length) / points.length
+                    let pos = path.getPointAt(t)
+                    smallRobot.position.copy(pos)
+                    smallRobot.lookAt(pos.clone().add(path.getTangentAt(t)))*/
             
             let position = plane.geometry.attributes.position
             let dis1 = temp1.position.distanceTo(robot.position)
             let dis2 = temp2.position.distanceTo(robot.position)
 
+            let t = ( Date.now() / 1500 % points.length) / points.length
+            let pos = path.getPointAt(t)
+            smallRobot.position.copy(pos)
+            smallRobot.lookAt(pos.clone().add(path.getTangentAt(t)))
+           
             if (dis1 < 200) {
                 if (dis1 < 150) {
-                    let t = (Date.now() / 1500 % points.length) / points.length
-                    let pos = path.getPointAt(t)
-                    smallRobot.position.copy(pos)
-                    smallRobot.lookAt(pos.clone().add(path.getTangentAt(t)))
                     if (prevDis > 150) {
                         arrCol = []
                         mainCol = col2
@@ -813,10 +838,11 @@ function init() {
                             col.setHSL(c.h, c.s, c.l+colOffset[i], THREE.SRGBColorSpace) //#38A8FF
                             arrCol.push(col.r, col.g, col.b)
                         }
-                        console.log("oo")
+                        plane.geometry.setAttribute('color', new THREE.Float32BufferAttribute(arrCol, 3))
+                        barEl.style.backgroundColor = `#${mainCol.getHexString()}`
                     }
                 } else {
-                    if (Math.abs(prevDis1 - dis1) > 10) {
+                    if (Math.abs(prevDis1 - dis1) > 5) {
                         arrCol = []
                         let p = 1-(dis1-150) / 50
                         let mix = new THREE.Color().lerpColors(col1, col2, p)
@@ -827,6 +853,8 @@ function init() {
                             col.setHSL(mix.h, mix.s, mix.l+colOffset[i], THREE.SRGBColorSpace) //#38A8FF
                             arrCol.push(col.r, col.g, col.b)
                         }
+                        plane.geometry.setAttribute('color', new THREE.Float32BufferAttribute(arrCol, 3))
+                        barEl.style.backgroundColor = `#${mainCol.getHexString()}`
                         prevDis1 = dis1
                     }
                 }
@@ -840,6 +868,8 @@ function init() {
                         col.setHSL(c.h, c.s, c.l+colOffset[i], THREE.SRGBColorSpace) //#38A8FF
                         arrCol.push(col.r, col.g, col.b)
                     }
+                    plane.geometry.setAttribute('color', new THREE.Float32BufferAttribute(arrCol, 3))
+                    barEl.style.backgroundColor = `#${mainCol.getHexString()}`
                 }
             }
             prevDis = dis1
@@ -855,9 +885,11 @@ function init() {
                             col.setHSL(c.h, c.s, c.l+colOffset[i], THREE.SRGBColorSpace) //#38A8FF
                             arrCol.push(col.r, col.g, col.b)
                         }
+                        plane.geometry.setAttribute('color', new THREE.Float32BufferAttribute(arrCol, 3))
+                        barEl.style.backgroundColor = `#${mainCol.getHexString()}`
                     }
                 } else {
-                    if (Math.abs(prevDis3 - dis2) > 10) {
+                    if (Math.abs(prevDis3 - dis2) > 5) {
                         arrCol = []
                         let p = 1-(dis2-150) / 50
                         let mix = new THREE.Color().lerpColors(col1, col3, p)
@@ -868,6 +900,8 @@ function init() {
                             col.setHSL(mix.h, mix.s, mix.l+colOffset[i], THREE.SRGBColorSpace) //#38A8FF
                             arrCol.push(col.r, col.g, col.b)
                         }
+                        plane.geometry.setAttribute('color', new THREE.Float32BufferAttribute(arrCol, 3))
+                        barEl.style.backgroundColor = `#${mainCol.getHexString()}`
                         prevDis3 = dis2
                     }
                 }
@@ -881,19 +915,21 @@ function init() {
                         col.setHSL(c.h, c.s, c.l+colOffset[i], THREE.SRGBColorSpace) //#38A8FF
                         arrCol.push(col.r, col.g, col.b)
                     }
+                    plane.geometry.setAttribute('color', new THREE.Float32BufferAttribute(arrCol, 3))
+                    barEl.style.backgroundColor = `#${mainCol.getHexString()}`
                 }
             }
             prevDis2 = dis2
 
-            plane.geometry.setAttribute('color', new THREE.Float32BufferAttribute(arrCol, 3))
-            barEl.style.backgroundColor = `#${mainCol.getHexString()}`
-
             cannonDebugger.update()
+            
             //camera.position.set(-13.66457673308406, 0.12664596784900795, 15.39896081993017)
             //camera.rotation.set(-0.23905961802462464, -0.5525403285779773, -0.12722594623065786)
+            stats.update()
             renderer.render(scene, camera)
             requestAnimationFrame( animate )
         }
+
         animate()
     }
 }

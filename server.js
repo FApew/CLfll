@@ -65,7 +65,6 @@ app.get("/src/assets/model/statue1.glb", (req, res) => {
     res.sendFile(__dirname + "/src/assets/model/statue1.glb")
 })
 
-
 app.get("/src/assets/model/table.glb", (req, res) => {
     res.sendFile(__dirname + "/src/assets/model/table.glb")
 })
@@ -74,6 +73,9 @@ app.get("/src/assets/model/minif/aie.glb", (req, res) => {
     res.sendFile(__dirname + "/src/assets/model/minif/aie.glb")
 })
 
+app.get("/src/assets/model/mini.glb", (req, res) => {
+    res.sendFile(__dirname + "/src/assets/model/mini.glb")
+})
 
 for (let i = 0; i < 16; i++) {
     app.get(`/src/assets/model/missions/${i}.glb`, (req, res) => {
