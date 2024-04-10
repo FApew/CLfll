@@ -24,7 +24,7 @@ const container = document.getElementById("main")
 const scene = new THREE.Scene()
 const loader = new GLTFLoader()
 
-const mNumber = 0, speed = {s: 15, t: 10}, col1 = new THREE.Color(0x38c8ff), col2 = new THREE.Color(0xf2a200), col3 = new THREE.Color(0x404040) 
+const speed = {s: 15, t: 10}, col1 = new THREE.Color(0x38c8ff), col2 = new THREE.Color(0xf2a200), col3 = new THREE.Color(0x404040) 
 
 let bPhone = window.innerWidth < 768 ? true : false, prevDis = 0, prevDis1 = 0, prevDis2 = 0, prevDis3 = 0, arrCol = [], mainCol
 
@@ -151,7 +151,7 @@ function init() {
         })
         loader.load("../src/assets/model/minif/aie.glb", (gltf) => {
             const obj = gltf.scene
-            let sc = 1.5
+            let sc = 1.8
             obj.scale.set(sc,sc,sc)
 
             obj.traverse((child) => {
@@ -172,9 +172,11 @@ function init() {
             let size = new THREE.Vector3()
             box.getSize(size)
 
-            obj.position.set(0,6,-1.5)
+            //obj.position.set(0,6,-1.6)
+            obj.position.set(0,5,0.8)
             
             smallRobot.add(obj)
+            smallRobot.position.set(0,-50,0)
         })
 
         //*####################
@@ -210,11 +212,10 @@ function init() {
 
                 const cKey = new CANNON.Body({
                     shape: new CANNON.Box(new CANNON.Vec3(size.x/2, size.y/2, size.z/2)),
-                    position: new CANNON.Vec3(i == 2 ? 31.5 : i == 0 || i == 1 ? 41.5 : 36.5, size.y/2, i == 1 || i == 2 ? 16.5 : i == 0 ? 26.5 : 21.5),
+                    position: new CANNON.Vec3(i == 2 ? 31.5 : i == 0 || i == 1 ? 41.5 : 36.5, size.y/2+.5, i == 1 || i == 2 ? 16.5 : i == 0 ? 26.5 : 21.5),
                     mass: .01
                 })
                 cKey.quaternion.setFromEuler(0, Math.PI/4+Math.PI*i/2, 0)
-                cKey.sleep()
                 world.addBody(cKey)
             
                 cKeys[i] = cKey
@@ -226,10 +227,12 @@ function init() {
         const missions = new THREE.Group()
         let cMissArr = [], missArr = []
 
-        for (let i = 9; i < 10; i++) {
+        for (let i = 0; i < misPos.length; i++) {
             let Miss = new THREE.Group()
-            loader.load(`../src/assets/model/missions/${i}.glb`, (gltf) => {
+            loader.load(`../src/assets/model/missions/${misPos[i].n}.glb`, (gltf) => {
                 const obj = gltf.scene
+                let sc = 0.7
+                obj.scale.set(sc, sc, sc)
                 obj.traverse((child) => {
                     if (child.isMesh) {
                         const newMaterial = new THREE.MeshStandardMaterial({
@@ -249,23 +252,25 @@ function init() {
                 let size = new THREE.Vector3()
                 box.getSize(size)
 
-                Miss.position.set(misPos[i].p.x, size.y/2, misPos[i].p.z)
+                Miss.position.set(misPos[i].p.x, /*size.y/2*/0, misPos[i].p.z)
                 Miss.rotation.y = misPos[i].r
                 missArr[i] = Miss
                 missions.add(Miss)
 
-                const cMiss = new CANNON.Body({
-                    type: misPos[i].t ? CANNON.Body.STATIC : CANNON.Body.DYNAMIC,
-                    shape: new CANNON.Box(new CANNON.Vec3(size.x/2, size.y/2, size.z/2)),
-                    position: new CANNON.Vec3(misPos[i].p.x, size.y/2, misPos[i].p.z),
-                    material: new CANNON.Material({friction: 0.1}),
-                    mass: misPos[i].t ? 0 : .01
-                })
-                cMiss.quaternion.setFromEuler(0, misPos[i].r, 0)
-            
-                world.addBody(cMiss)
-            
-                cMissArr[i] = cMiss
+                if (misPos[i].b) {
+                    const cMiss = new CANNON.Body({
+                        type: misPos[i].t ? CANNON.Body.STATIC : CANNON.Body.DYNAMIC,
+                        shape: new CANNON.Box(new CANNON.Vec3(size.x/2, size.y/2, size.z/2)),
+                        position: new CANNON.Vec3(misPos[i].p.x, size.y/2, misPos[i].p.z),
+                        material: new CANNON.Material({friction: 0.1}),
+                        mass: misPos[i].t ? 0 : .01
+                    })
+                    cMiss.quaternion.setFromEuler(0, misPos[i].r, 0)
+                
+                    world.addBody(cMiss)
+                
+                    cMissArr[i] = cMiss
+                }
             })
         }
         //* #######################
@@ -527,7 +532,7 @@ function init() {
         //* #######################
 
         scene.add(bricks)
-        scene.add(missions)
+        //scene.add(missions)
         scene.add(Letters)
         scene.add(robot)
         scene.add(tiles)
@@ -680,20 +685,18 @@ function init() {
         cPlane.material = robotMaterial
 
         const cannonDebugger = new CannonDebugger(scene, world, {})
-        let t0 = new Date().getTime()
+
+        if (bPhone) {
+            renderer.shadowMap.enabled = false
+            camera.fov = 50
+            camera.updateProjectionMatrix()
+        } else {
+            renderer.shadowMap.enabled = false
+            camera.fov = 30
+            camera.updateProjectionMatrix()
+        }
 
         function animate() {
-            let dt = new Date().getTime() - t0
-            if (bPhone) {
-                renderer.shadowMap.enabled = false
-                camera.fov = 50
-                camera.updateProjectionMatrix()
-            } else {
-                renderer.shadowMap.enabled = false
-                camera.fov = 30
-                camera.updateProjectionMatrix()
-            }
-
             dirBox.position.set(camera.position.x - startPos.x - 80, camera.position.y - startPos.y + 56, camera.position.z - startPos.z + 140);
             dirLight.target.position.set(camera.position.x - startPos.x - 80, camera.position.y - startPos.y + 56, camera.position.z - startPos.z + 140)
 
@@ -741,62 +744,55 @@ function init() {
             robot.position.copy(chasBody.position)
             robot.quaternion.copy(chasBody.quaternion)
 
-            for (let i = 0; i < missions.children.length; i++) {
+            /*for (let i = 0; i < missions.children.length; i++) {
                 try {
                     let obj = missArr[i], cObj = cMissArr[i]
                     obj.position.copy(cObj.position)
                     obj.quaternion.copy(cObj.quaternion)
                 } catch (e) {}
-            }
+            }*/
 
             for (let i = 0; i < arrBricks.length; i++) {
-                try {
-                    let obj = arrBricks[i], cObj = cBricks[i]
+                let obj = arrBricks[i], cObj = cBricks[i]
+                if (cObj.velocity.length() < 0.01) {
+                    cObj.sleep()
+                } else {
                     obj.position.copy(cObj.position)
                     obj.quaternion.copy(cObj.quaternion)
-                    if (cObj.velocity.length() < 0.01) {
-                        cObj.sleep()
-                    }
-                } catch (e) {}
+                }
             }
 
             for (let i = 0; i < miniArr.length; i++) {
-                try {
-                    let obj = miniArr[i], cObj = cMinis[i]
+                let obj = miniArr[i], cObj = cMinis[i]
+                if (cObj.velocity.length() < 0.01) {
+                    cObj.sleep()
+                } else {
                     obj.position.copy(cObj.position)
-                    obj.quaternion.copy(cObj.quaternion)
-                    if (cObj.velocity.length() < 0.01) {
-                        cObj.sleep()
-                    }
-                } catch (e) {}
+                    obj.quaternion.copy(cObj.quaternion) 
+                }
             }
 
             for (let i = 0; i < keyArr.length; i++) {
-                try {
-                    let obj = keyArr[i], cObj = cKeys[i]
+                let obj = keyArr[i], cObj = cKeys[i]
+                if (cObj.velocity.length() < 0.01) {
+                    cObj.sleep()
+                } else {
                     obj.position.copy(cObj.position)
                     obj.quaternion.copy(cObj.quaternion)
-                    if (cObj.velocity.length() < 0.01) {
-                        cObj.sleep()
-                    }
-                } catch (e) {}
+                }
             }
 
-            for (let i = 0; i < 11; i++) {
+            for (let i = 0; i < LettArr.length; i++) {
                 try {
                     let obj = LettArr[i], cObj = cLetts[i]
-                    obj.position.copy(cObj.position)
-                    obj.quaternion.copy(cObj.quaternion)
                     if (cObj.velocity.length() < 0.01) {
                         cObj.sleep()
+                    } else {
+                        obj.position.copy(cObj.position)
+                        obj.quaternion.copy(cObj.quaternion)
                     }
                 } catch (e) {}
             }
-
-            let t = (dt/2000 % points.length) / points.length
-            let pos = path.getPointAt(t)
-            smallRobot.position.copy(pos)
-            smallRobot.lookAt(pos.clone().add(path.getTangentAt(t)))
             
             let position = plane.geometry.attributes.position
             let dis1 = temp1.position.distanceTo(robot.position)
@@ -804,6 +800,10 @@ function init() {
 
             if (dis1 < 200) {
                 if (dis1 < 150) {
+                    let t = (Date.now() / 1500 % points.length) / points.length
+                    let pos = path.getPointAt(t)
+                    smallRobot.position.copy(pos)
+                    smallRobot.lookAt(pos.clone().add(path.getTangentAt(t)))
                     if (prevDis > 150) {
                         arrCol = []
                         mainCol = col2
@@ -813,6 +813,7 @@ function init() {
                             col.setHSL(c.h, c.s, c.l+colOffset[i], THREE.SRGBColorSpace) //#38A8FF
                             arrCol.push(col.r, col.g, col.b)
                         }
+                        console.log("oo")
                     }
                 } else {
                     if (Math.abs(prevDis1 - dis1) > 10) {
@@ -887,7 +888,7 @@ function init() {
             plane.geometry.setAttribute('color', new THREE.Float32BufferAttribute(arrCol, 3))
             barEl.style.backgroundColor = `#${mainCol.getHexString()}`
 
-            //cannonDebugger.update()
+            cannonDebugger.update()
             //camera.position.set(-13.66457673308406, 0.12664596784900795, 15.39896081993017)
             //camera.rotation.set(-0.23905961802462464, -0.5525403285779773, -0.12722594623065786)
             renderer.render(scene, camera)
