@@ -1,15 +1,17 @@
+//CODED BY AIELLO FEDERICO - CL-ROBOCITY - 2024
 import * as THREE from "three"
 import * as CANNON from "https://cdn.jsdelivr.net/npm/cannon-es@0.20.0/+esm"
 import WebGL from "three/addons/capabilities/WebGL.js"
 import { OrbitControls } from "three/addons/controls/OrbitControls.js"
-import { misPos, Piles } from "./assets/js/data.js"
+import { misPos, Piles, signPos, pedPos, miniPos } from "./assets/js/data.js"
 import { robot, cRobot, chasBody } from "./assets/js/robot.js"
 import { dirLight, hemiLight } from "./assets/js/lights.js"
 import { plane } from "./assets/js/plane.js"
 import { tiles } from "./assets/js/tiles.js"
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js"
 import CannonDebugger from "https://cdn.jsdelivr.net/npm/cannon-es-debugger@1.0.0/+esm"
-import Stats from 'three/addons/libs/stats.module.js';
+import Stats from 'three/addons/libs/stats.module.js'
+import { SVGLoader } from "three/addons/loaders/SVGLoader.js"
 
 const barEl = document.getElementById("bar")
 
@@ -24,10 +26,11 @@ const container = document.getElementById("main")
 
 const scene = new THREE.Scene()
 const loader = new GLTFLoader()
+const SVGloader = new SVGLoader()
 
 const speed = {s: 15, t: 10}, col1 = new THREE.Color(0x38c8ff), col2 = new THREE.Color(0xf2a200), col3 = new THREE.Color(0x404040) 
 
-let bPhone = window.innerWidth < 768 ? true : false, prevDis = 0, prevDis1 = 0, prevDis2 = 0, prevDis3 = 0, arrCol = [], mainCol
+let bPhone = window.innerWidth < 768 ? true : false, prevDis = 1000, prevDis1 = 1000, prevDis2 = 1000, prevDis3 = 1000, arrCol = [], mainCol
 
 let colOffset = []
 
@@ -275,6 +278,119 @@ function init() {
         }
         //* #######################
 
+        //* ###### PEDESTALS ######
+        const peds = new THREE.Group()
+
+        for (let i = 0; i < pedPos.length; i++) {
+            let h, w
+            loader.load(`../src/assets/model/pedestal.glb`, (gltf) => {
+                const obj = gltf.scene
+                let sc = 4
+                obj.scale.set(sc, sc, sc)
+                obj.traverse((child) => {
+                    if (child.isMesh) {
+                        const newMaterial = new THREE.MeshStandardMaterial({
+                            color: "#141414",
+                            map: child.material.map,
+                            side: THREE.DoubleSide
+                        })
+                        child.material = newMaterial
+                        child.castShadow = true
+                        child.receiveShadow = true
+                        child.geometry.computeVertexNormals()
+                    }
+                })
+
+                let box = new THREE.Box3().setFromObject(obj)
+                let size = new THREE.Vector3()
+                box.getSize(size)
+                h = size.y/2
+                w = size.x
+
+                obj.position.set(pedPos[i].p.x, size.y/2, pedPos[i].p.z)
+                obj.rotation.y = pedPos[i].r
+                peds.add(obj)
+
+                const cPed = new CANNON.Body({
+                    type: CANNON.Body.STATIC,
+                    shape: new CANNON.Box(new CANNON.Vec3(size.x/2, h, size.z/2)),
+                    position: new CANNON.Vec3(pedPos[i].p.x, h, pedPos[i].p.z),
+                    material: new CANNON.Material({friction: 0.1}),
+                })
+                cPed.quaternion.setFromEuler(0, pedPos[i].r, 0)
+            
+                world.addBody(cPed)
+            })
+            /*const img = new THREE.Mesh(
+                new THREE.BoxGeometry(40, 0.01, 20),
+                new THREE.MeshBasicMaterial({ 
+                    map: new THREE.TextureLoader().load(signPos[i].img),
+                    flatShading: true
+                })
+            )
+            img.receiveShadow = true
+            img.position.set(-250, 12, -110)
+            img.rotation.set(Math.PI/2, 0 ,-signPos[i].r)
+            scene.add(img)*/
+        }
+        //* #######################
+
+        //* ####### SIGNS #########
+        const signs = new THREE.Group()
+
+        for (let i = 0; i < signPos.length; i++) {
+            let h, w
+            loader.load(`../src/assets/model/sign.glb`, (gltf) => {
+                const obj = gltf.scene
+                let sc = 4
+                obj.scale.set(sc, sc, sc)
+                obj.traverse((child) => {
+                    if (child.isMesh) {
+                        const newMaterial = new THREE.MeshStandardMaterial({
+                            color: "#141414",
+                            map: child.material.map,
+                            side: THREE.DoubleSide
+                        })
+                        child.material = newMaterial
+                        child.castShadow = true
+                        child.receiveShadow = true
+                        child.geometry.computeVertexNormals()
+                    }
+                })
+
+                let box = new THREE.Box3().setFromObject(obj)
+                let size = new THREE.Vector3()
+                box.getSize(size)
+                h = size.y/2
+                w = size.x
+
+                obj.position.set(signPos[i].p.x, size.y/2, signPos[i].p.z)
+                obj.rotation.y = signPos[i].r
+                signs.add(obj)
+
+                const cSign = new CANNON.Body({
+                    type: CANNON.Body.STATIC,
+                    shape: new CANNON.Box(new CANNON.Vec3(size.x/2, h, size.z/2)),
+                    position: new CANNON.Vec3(signPos[i].p.x, h, signPos[i].p.z),
+                    material: new CANNON.Material({friction: 0.1}),
+                })
+                cSign.quaternion.setFromEuler(0, signPos[i].r, 0)
+            
+                world.addBody(cSign)
+            })
+            const img = new THREE.Mesh(
+                new THREE.BoxGeometry(20/signPos[i].rat, 0.01, 20),
+                new THREE.MeshBasicMaterial({ 
+                    map: new THREE.TextureLoader().load(signPos[i].img)
+                })
+            )
+            img.receiveShadow = true
+            img.position.set(signPos[i].p.x, 12, signPos[i].p.z)
+            img.rotation.set(Math.PI/2, 0 ,-signPos[i].r)
+            scene.add(img)
+        }
+        //* #######################
+
         //* ####### LETTERS #######
         let Letters = new THREE.Group(), cLetts = [], LettArr = []
 
@@ -337,7 +453,7 @@ function init() {
                         obj.traverse((child) => {
                             if (child.isMesh) {
                                 const newMaterial = new THREE.MeshStandardMaterial({
-                                    color: new THREE.Color().setHSL(0.57, 1, 0.7+(Math.random() * 0.1 - 0.05), THREE.SRGBColorSpace),
+                                    color: new THREE.Color().setHSL(Piles[i].col[0], Piles[i].col[1], Piles[i].col[2]+(Math.random() * 0.1 - 0.05), THREE.SRGBColorSpace),
                                     map: child.material.map,
                                     side: THREE.DoubleSide
                                 })
@@ -379,11 +495,11 @@ function init() {
         let minif = new THREE.Group()
         let miniArr = [], cMinis = []
 
-        /*for (let i = 0; i < 1; i++) {
-            loader.load(`../src/assets/model/minif/${idx}.glb`, (gltf) => {
+        for (let i = 0; i < miniPos.length; i++) {
+            loader.load(`../src/assets/model/minif/${miniPos[i].n}.glb`, (gltf) => {
                 const obj = gltf.scene
                 
-                obj.traverse((child) => {
+                /*obj.traverse((child) => {
                     if (child.isMesh) {
                         const newMaterial = new THREE.MeshStandardMaterial({
                             color: child.material.color,
@@ -395,7 +511,7 @@ function init() {
                         child.receiveShadow = true
                         child.geometry.computeVertexNormals()
                     }
-                })
+                })*/
 
                 obj.scale.set(3,3,3)
 
@@ -403,22 +519,25 @@ function init() {
                 let size = new THREE.Vector3()
                 box.getSize(size)
 
-                obj.position.set(-20,0,-20)
-                obj.rotation.set(0,0,0)
+                obj.position.set(miniPos[i].p.x,miniPos[i].p.y,miniPos[i].p.z)
+                obj.rotation.set(0,miniPos[i].r,0)
                 minif.add(obj)
                 miniArr[i] = obj
 
-                const cMini = new CANNON.Body({
-                    shape: new CANNON.Box(new CANNON.Vec3(size.x/2, size.y/2, size.z/2)),
-                    position: new CANNON.Vec3(15,size.y/2,-30),
-                    mass: .01
-                })
-                cMini.quaternion.setFromEuler(0,-Math.PI/12,0)
-                world.addBody(cMini)
-                cMini.sleep()
-                cMinis[i] = cMini
+                if (miniPos[i].b) {
+                    const cMini = new CANNON.Body({
+                        shape: new CANNON.Box(new CANNON.Vec3(size.x/2, size.y/2, size.z/2)),
+                        position: new CANNON.Vec3(miniPos[i].p.x,miniPos[i].p.y,miniPos[i].p.z),
+                        mass: .01
+                    })
+                    cMini.quaternion.setFromEuler(0,miniPos[i].r,0)
+                    world.addBody(cMini)
+                    cMini.sleep()
+                    cMinis[i] = cMini
+                }
+                cMinis[i] = 0
             })
-        }*/
+        }
         //* #######################
 
 
@@ -532,6 +651,8 @@ function init() {
         //* #######################
 
         scene.add(bricks)
+        scene.add(peds)
+        scene.add(signs)
         scene.add(Letters)
         scene.add(robot)
         scene.add(tiles)
@@ -552,8 +673,15 @@ function init() {
         )
         temp2.position.set(90, 1, 290)
 
+        let temp3 = new THREE.Mesh(
+            new THREE.BoxGeometry(1,1,1),
+            new THREE.MeshBasicMaterial({color: 0xff0000})
+        )
+        temp3.position.set(-210, 1, 210)
+
         scene.add(temp1)
         scene.add(temp2)
+        scene.add(temp3)
 
         cRobot.addToWorld(world)
 
@@ -687,14 +815,14 @@ function init() {
 
         if (bPhone) {
             renderer.shadowMap.enabled = false
-            renderer.setPixelRatio(window.devicePixelRatio * .8)
-            camera.fov = 50
+            renderer.setPixelRatio(window.devicePixelRatio * 0.6)
+            camera.fov = 40
             /*camera.near = 10
             camera.far = 300*/
             camera.updateProjectionMatrix()
         } else {
             renderer.shadowMap.enabled = false
-            renderer.setPixelRatio(window.devicePixelRatio )
+            renderer.setPixelRatio(window.devicePixelRatio * 0.9)
             camera.fov = 30
             camera.updateProjectionMatrix()
             scene.add(missions)
@@ -751,12 +879,12 @@ function init() {
             }
 
             let dt = Date.now()
-            let d = Math.abs(pt - dt)
+            /*wlet d = Math.abs(pt - dt)
             if (d > 30 || bPhone) {
                 world.step(1/60, d)
-            } else {
+            } else {*/
                 world.step(0.1)
-            }
+            //}
             
             pt = dt
             
@@ -782,12 +910,14 @@ function init() {
             }
 
             for (let i = 0; i < miniArr.length; i++) {
-                let obj = miniArr[i], cObj = cMinis[i]
-                if (cObj.velocity.length() < 0.01) {
-                    cObj.sleep()
-                } else {
-                    obj.position.copy(cObj.position)
-                    obj.quaternion.copy(cObj.quaternion) 
+                if (cMinis[i] != 0) {
+                    let obj = miniArr[i], cObj = cMinis[i]
+                    if (cObj.velocity.length() < 0.01) {
+                        cObj.sleep()
+                    } else {
+                        obj.position.copy(cObj.position)
+                        obj.quaternion.copy(cObj.quaternion) 
+                    }
                 }
             }
 
@@ -921,7 +1051,7 @@ function init() {
             }
             prevDis2 = dis2
 
-            cannonDebugger.update()
+            //cannonDebugger.update()
             
             //camera.position.set(-13.66457673308406, 0.12664596784900795, 15.39896081993017)
             //camera.rotation.set(-0.23905961802462464, -0.5525403285779773, -0.12722594623065786)

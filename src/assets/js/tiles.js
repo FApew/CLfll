@@ -1,8 +1,7 @@
 import {Group, Mesh, BoxGeometry, MeshStandardMaterial, Box3, Vector3} from "three"
-import * as CANNON from 'https://cdn.jsdelivr.net/npm/cannon-es@0.20.0/+esm'
 
-let tileNum = [8, 30]
-let tP = [{x: -20, z: 20, dx: -10, dz: 10}, {x: -250, z: -50, dx: 10, dz: 10}]
+let tileNum = [8, 30, 8]
+let tP = [{x: -20, z: 20, dx: -10, dz: 10}, {x: -250, z: -50, dx: 10, dz: 10}, {x: -110, z: 110, dx: -10, dz: 10}]
 
 export const tiles = new Group()
 

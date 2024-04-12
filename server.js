@@ -60,7 +60,6 @@ app.get("/src/assets/model/base.glb", (req, res) => {
     res.sendFile(__dirname + "/src/assets/model/base.glb")
 })
 
-
 app.get("/src/assets/model/statue1.glb", (req, res) => {
     res.sendFile(__dirname + "/src/assets/model/statue1.glb")
 })
@@ -75,6 +74,14 @@ app.get("/src/assets/model/minif/aie.glb", (req, res) => {
 
 app.get("/src/assets/model/mini.glb", (req, res) => {
     res.sendFile(__dirname + "/src/assets/model/mini.glb")
+})
+
+app.get("/src/assets/model/sign.glb", (req, res) => {
+    res.sendFile(__dirname + "/src/assets/model/sign.glb")
+})
+
+app.get("/src/assets/model/pedestal.glb", (req, res) => {
+    res.sendFile(__dirname + "/src/assets/model/pedestal.glb")
 })
 
 for (let i = 0; i < 16; i++) {
@@ -95,7 +102,7 @@ for (let i = 0; i < 11; i++) {
     })
 }
 
-for (let i = 0; i <= 6; i++) {
+for (let i = 0; i <= 8; i++) {
     app.get(`/src/assets/img/${i}.png`, (req, res) => {
         res.sendFile(__dirname + `/src/assets/img/${i}.png`)
     })
