@@ -1039,7 +1039,7 @@ function init() {
                 prevDis2 = dis2
             }
 
-            cannonDebugger.update()
+            //cannonDebugger.update()
             
             //camera.position.set(-13.66457673308406, 0.12664596784900795, 15.39896081993017)
             //camera.rotation.set(-0.23905961802462464, -0.5525403285779773, -0.12722594623065786)
