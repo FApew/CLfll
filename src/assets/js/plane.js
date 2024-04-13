@@ -18,7 +18,7 @@ position = gPlane.attributes.position
 const arrCol = []
 
 for (let i = 0; i < position.count; i++) {
-    col.setHSL(0.57, 1, 0.61+(Math.random() * 0.1 - 0.05), SRGBColorSpace) //#38A8FF
+    col.setHSL(0.57, 1, 0.52+(Math.random() * 0.1 - 0.05), SRGBColorSpace) //#38A8FF
     arrCol.push(col.r, col.g, col.b)
 }
 

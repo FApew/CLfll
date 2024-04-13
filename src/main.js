@@ -3,7 +3,7 @@ import * as THREE from "three"
 import * as CANNON from "https://cdn.jsdelivr.net/npm/cannon-es@0.20.0/+esm"
 import WebGL from "three/addons/capabilities/WebGL.js"
 import { OrbitControls } from "three/addons/controls/OrbitControls.js"
-import { misPos, Piles, signPos, pedPos, miniPos } from "./assets/js/data.js"
+import { misPos, Piles, signPos, pedPos, objPos } from "./assets/js/data.js"
 import { robot, cRobot, chasBody } from "./assets/js/robot.js"
 import { dirLight, hemiLight } from "./assets/js/lights.js"
 import { plane } from "./assets/js/plane.js"
@@ -152,7 +152,7 @@ function init() {
             
             smallRobot.add(obj)
         })
-        loader.load("../src/assets/model/minif/aie.glb", (gltf) => {
+        loader.load("../src/assets/model/objs/aie.glb", (gltf) => {
             const obj = gltf.scene
             let sc = 1.8
             obj.scale.set(sc,sc,sc)
@@ -491,15 +491,15 @@ function init() {
         }
         //* #######################
 
-        //* ##### MINIFIGURES #####
-        let minif = new THREE.Group()
-        let miniArr = [], cMinis = []
+        //* ######## OBJS #########
+        let objs = new THREE.Group()
+        let objArr = [], cObjs = []
 
-        for (let i = 0; i < miniPos.length; i++) {
-            loader.load(`../src/assets/model/minif/${miniPos[i].n}.glb`, (gltf) => {
+        for (let i = 0; i < objPos.length; i++) {
+            loader.load(`../src/assets/model/objs/${objPos[i].n}.glb`, (gltf) => {
                 const obj = gltf.scene
                 
-                /*obj.traverse((child) => {
+                obj.traverse((child) => {
                     if (child.isMesh) {
                         const newMaterial = new THREE.MeshStandardMaterial({
                             color: child.material.color,
@@ -511,7 +511,7 @@ function init() {
                         child.receiveShadow = true
                         child.geometry.computeVertexNormals()
                     }
-                })*/
+                })
 
                 obj.scale.set(3,3,3)
 
@@ -519,23 +519,24 @@ function init() {
                 let size = new THREE.Vector3()
                 box.getSize(size)
 
-                obj.position.set(miniPos[i].p.x,miniPos[i].p.y,miniPos[i].p.z)
-                obj.rotation.set(0,miniPos[i].r,0)
-                minif.add(obj)
-                miniArr[i] = obj
+                obj.position.set(objPos[i].p.x,objPos[i].p.y+size.y/2,objPos[i].p.z)
+                obj.rotation.set(0,objPos[i].r,0)
+                objs.add(obj)
+                objArr[i] = obj
 
-                if (miniPos[i].b) {
-                    const cMini = new CANNON.Body({
+                if (objPos[i].b) {
+                    const cObj = new CANNON.Body({
                         shape: new CANNON.Box(new CANNON.Vec3(size.x/2, size.y/2, size.z/2)),
-                        position: new CANNON.Vec3(miniPos[i].p.x,miniPos[i].p.y,miniPos[i].p.z),
-                        mass: .01
+                        position: new CANNON.Vec3(objPos[i].p.x,objPos[i].p.y+size.y/2,objPos[i].p.z),
+                        mass: objPos[i].b == 1 ? .01 : 0
                     })
-                    cMini.quaternion.setFromEuler(0,miniPos[i].r,0)
-                    world.addBody(cMini)
-                    cMini.sleep()
-                    cMinis[i] = cMini
+                    cObj.quaternion.setFromEuler(0,objPos[i].r,0)
+                    world.addBody(cObj)
+                    cObj.sleep()
+                    cObjs[i] = cObj
+                } else {
+                    cObjs[i] = 0
                 }
-                cMinis[i] = 0
             })
         }
         //* #######################
@@ -586,7 +587,7 @@ function init() {
                 obj.traverse((child) => {
                     if (child.isMesh) {
                         const newMaterial = new THREE.MeshStandardMaterial({
-                            color: `#${col2.getHexString()}`,
+                            color: i == 0 ? `#${col2.getHexString()}` : `#${col3.getHexString()}`,
                             map: child.material.map,
                             side: THREE.DoubleSide
                         })
@@ -657,7 +658,7 @@ function init() {
         scene.add(robot)
         scene.add(tiles)
         scene.add(keys)
-        scene.add(minif)
+        scene.add(objs)
         scene.add(statue)
         scene.add(smallRobot)
 
@@ -909,9 +910,9 @@ function init() {
                 }
             }
 
-            for (let i = 0; i < miniArr.length; i++) {
-                if (cMinis[i] != 0) {
-                    let obj = miniArr[i], cObj = cMinis[i]
+            for (let i = 0; i < objArr.length; i++) {
+                if (cObjs[i] != 0) {
+                    let obj = objArr[i], cObj = cObjs[i]
                     if (cObj.velocity.length() < 0.01) {
                         cObj.sleep()
                     } else {
@@ -956,13 +957,75 @@ function init() {
             let pos = path.getPointAt(t)
             smallRobot.position.copy(pos)
             smallRobot.lookAt(pos.clone().add(path.getTangentAt(t)))
-           
-            if (dis1 < 200) {
-                if (dis1 < 150) {
-                    if (prevDis > 150) {
+
+            if (chasBody.velocity.length() > 0.01) {
+                if (dis1 < 200) {
+                    if (dis1 < 150) {
+                        if (prevDis > 150) {
+                            arrCol = []
+                            mainCol = col2
+                            let c = col2.getHSL(col2)
+                            for (let i = 0; i < position.count; i++) {
+                                let col = new THREE.Color()
+                                col.setHSL(c.h, c.s, c.l+colOffset[i], THREE.SRGBColorSpace) //#38A8FF
+                                arrCol.push(col.r, col.g, col.b)
+                            }
+                            plane.geometry.setAttribute('color', new THREE.Float32BufferAttribute(arrCol, 3))
+                            barEl.style.backgroundColor = `#${mainCol.getHexString()}`
+                        }
+                    } else {
+                        if (Math.abs(prevDis1 - dis1) > 5) {
+                            arrCol = []
+                            let p = 1-(dis1-150) / 50
+                            let mix = new THREE.Color().lerpColors(col1, col2, p)
+                            mix.getHSL(mix)
+                            mainCol = mix
+                            for (let i = 0; i < position.count; i++) {
+                                let col = new THREE.Color()
+                                col.setHSL(mix.h, mix.s, mix.l+colOffset[i], THREE.SRGBColorSpace) //#38A8FF
+                                arrCol.push(col.r, col.g, col.b)
+                            }
+                            plane.geometry.setAttribute('color', new THREE.Float32BufferAttribute(arrCol, 3))
+                            barEl.style.backgroundColor = `#${mainCol.getHexString()}`
+                            prevDis1 = dis1
+                        }
+                    }
+                } else if (dis2 < 200) {
+                    if (dis2 < 150) {
+                        if (prevDis2 > 150) {
+                            arrCol = []
+                            mainCol = col3
+                            let c = col3.getHSL(col3)
+                            for (let i = 0; i < position.count; i++) {
+                                let col = new THREE.Color()
+                                col.setHSL(c.h, c.s, c.l+colOffset[i], THREE.SRGBColorSpace) //#38A8FF
+                                arrCol.push(col.r, col.g, col.b)
+                            }
+                            plane.geometry.setAttribute('color', new THREE.Float32BufferAttribute(arrCol, 3))
+                            barEl.style.backgroundColor = `#${mainCol.getHexString()}`
+                        }
+                    } else {
+                        if (Math.abs(prevDis3 - dis2) > 5) {
+                            arrCol = []
+                            let p = 1-(dis2-150) / 50
+                            let mix = new THREE.Color().lerpColors(col1, col3, p)
+                            mix.getHSL(mix)
+                            mainCol = mix
+                            for (let i = 0; i < position.count; i++) {
+                                let col = new THREE.Color()
+                                col.setHSL(mix.h, mix.s, mix.l+colOffset[i], THREE.SRGBColorSpace) //#38A8FF
+                                arrCol.push(col.r, col.g, col.b)
+                            }
+                            plane.geometry.setAttribute('color', new THREE.Float32BufferAttribute(arrCol, 3))
+                            barEl.style.backgroundColor = `#${mainCol.getHexString()}`
+                            prevDis3 = dis2
+                        }
+                    }
+                } else {
+                    if (prevDis2 < 200 || prevDis < 200) {
                         arrCol = []
-                        mainCol = col2
-                        let c = col2.getHSL(col2)
+                        mainCol = col1
+                        let c = col1.getHSL(col1)
                         for (let i = 0; i < position.count; i++) {
                             let col = new THREE.Color()
                             col.setHSL(c.h, c.s, c.l+colOffset[i], THREE.SRGBColorSpace) //#38A8FF
@@ -971,87 +1034,12 @@ function init() {
                         plane.geometry.setAttribute('color', new THREE.Float32BufferAttribute(arrCol, 3))
                         barEl.style.backgroundColor = `#${mainCol.getHexString()}`
                     }
-                } else {
-                    if (Math.abs(prevDis1 - dis1) > 5) {
-                        arrCol = []
-                        let p = 1-(dis1-150) / 50
-                        let mix = new THREE.Color().lerpColors(col1, col2, p)
-                        mix.getHSL(mix)
-                        mainCol = mix
-                        for (let i = 0; i < position.count; i++) {
-                            let col = new THREE.Color()
-                            col.setHSL(mix.h, mix.s, mix.l+colOffset[i], THREE.SRGBColorSpace) //#38A8FF
-                            arrCol.push(col.r, col.g, col.b)
-                        }
-                        plane.geometry.setAttribute('color', new THREE.Float32BufferAttribute(arrCol, 3))
-                        barEl.style.backgroundColor = `#${mainCol.getHexString()}`
-                        prevDis1 = dis1
-                    }
                 }
-            } else {
-                if (prevDis < 200) {
-                    arrCol = []
-                    mainCol = col1
-                    for (let i = 0; i < position.count; i++) {
-                        let col = new THREE.Color()
-                        let c = col1.getHSL(col1)
-                        col.setHSL(c.h, c.s, c.l+colOffset[i], THREE.SRGBColorSpace) //#38A8FF
-                        arrCol.push(col.r, col.g, col.b)
-                    }
-                    plane.geometry.setAttribute('color', new THREE.Float32BufferAttribute(arrCol, 3))
-                    barEl.style.backgroundColor = `#${mainCol.getHexString()}`
-                }
+                prevDis = dis1
+                prevDis2 = dis2
             }
-            prevDis = dis1
 
-            if (dis2 < 200) {
-                if (dis2 < 150) {
-                    if (prevDis2 > 150) {
-                        arrCol = []
-                        mainCol = col3
-                        let c = col3.getHSL(col3)
-                        for (let i = 0; i < position.count; i++) {
-                            let col = new THREE.Color()
-                            col.setHSL(c.h, c.s, c.l+colOffset[i], THREE.SRGBColorSpace) //#38A8FF
-                            arrCol.push(col.r, col.g, col.b)
-                        }
-                        plane.geometry.setAttribute('color', new THREE.Float32BufferAttribute(arrCol, 3))
-                        barEl.style.backgroundColor = `#${mainCol.getHexString()}`
-                    }
-                } else {
-                    if (Math.abs(prevDis3 - dis2) > 5) {
-                        arrCol = []
-                        let p = 1-(dis2-150) / 50
-                        let mix = new THREE.Color().lerpColors(col1, col3, p)
-                        mix.getHSL(mix)
-                        mainCol = mix
-                        for (let i = 0; i < position.count; i++) {
-                            let col = new THREE.Color()
-                            col.setHSL(mix.h, mix.s, mix.l+colOffset[i], THREE.SRGBColorSpace) //#38A8FF
-                            arrCol.push(col.r, col.g, col.b)
-                        }
-                        plane.geometry.setAttribute('color', new THREE.Float32BufferAttribute(arrCol, 3))
-                        barEl.style.backgroundColor = `#${mainCol.getHexString()}`
-                        prevDis3 = dis2
-                    }
-                }
-            } else {
-                if (prevDis2 < 150) {
-                    arrCol = []
-                    mainCol = col1
-                    for (let i = 0; i < position.count; i++) {
-                        let col = new THREE.Color()
-                        let c = col1.getHSL(col1)
-                        col.setHSL(c.h, c.s, c.l+colOffset[i], THREE.SRGBColorSpace) //#38A8FF
-                        arrCol.push(col.r, col.g, col.b)
-                    }
-                    plane.geometry.setAttribute('color', new THREE.Float32BufferAttribute(arrCol, 3))
-                    barEl.style.backgroundColor = `#${mainCol.getHexString()}`
-                }
-            }
-            prevDis2 = dis2
-
-            //cannonDebugger.update()
+            cannonDebugger.update()
             
             //camera.position.set(-13.66457673308406, 0.12664596784900795, 15.39896081993017)
             //camera.rotation.set(-0.23905961802462464, -0.5525403285779773, -0.12722594623065786)
