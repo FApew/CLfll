@@ -72,8 +72,8 @@ app.get("/src/assets/model/table.glb", (req, res) => {
     res.sendFile(__dirname + "/src/assets/model/table.glb")
 })
 
-app.get("/src/assets/model/minif/aie.glb", (req, res) => {
-    res.sendFile(__dirname + "/src/assets/model/minif/aie.glb")
+app.get("/src/assets/model/objs/aie.glb", (req, res) => {
+    res.sendFile(__dirname + "/src/assets/model/objs/aie.glb")
 })
 
 app.get("/src/assets/model/mini.glb", (req, res) => {
