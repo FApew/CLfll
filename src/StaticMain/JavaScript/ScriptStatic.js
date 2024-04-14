@@ -2,7 +2,6 @@ const masteryear = document.getElementById("masterYear")
 const poweryear = document.getElementById("powerYear")
 
 
-
 masteryear.addEventListener("mousedown", () => {
     window.open("./masterpiece.html")
 })
@@ -10,3 +9,7 @@ masteryear.addEventListener("mousedown", () => {
 poweryear.addEventListener("mousedown", () => {
     window.open("#")
 })
+
+
+
+

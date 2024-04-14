@@ -228,7 +228,7 @@ body {
 /*ENDBOX*/
 
 .endBox {
-    transition: ease-in 1s;
+    transition: ease-in 0.5s;
     height: min-content;
     width: 100%;
     color: white;
@@ -263,9 +263,6 @@ body {
 }
 
 #masterpieceMAIN{
-    display: grid;
-    grid-template-rows: 40% 1fr;
-    grid-template-columns: 100%;
     position: relative;
     width: 100%;
     height: 100%;
@@ -273,25 +270,118 @@ body {
 }
 
 #masterpieceINTRO {
-    background-color: rebeccapurple;
-    display: grid;
-    width: 100%;
-    height: 500px;
-    grid-template-rows:1fr 40%;
-    grid-template-columns: 100%;
+    box-sizing: border-box;
+    padding: 10px;
     
+    display: flex;
+    width: 100%;
+    height: min-content;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
 }
 
 #INTROimgBox {
+    box-sizing: border-box;  
     display: flex;
     justify-content: center;
+    padding: 5px;
 }  
 
 
 
 #masterIntroImg {
-    box-sizing: border-box;
-    padding: 5px;
+    
     max-height: 100%;
+    max-width: 100%;
     width: auto; 
+    height: 100%;
+    aspect-ratio: 810/466;
+}
+
+#INTROtextBox{
+    margin: calc(50%-25px);
+    height: 100%;
+    width: 200px;
+    display: grid;
+    grid-template-columns: 1fr;
+    grid-template-rows: 10% 90%;
+    border: 5px #405daa solid;
+    border-radius: 25px;
+    padding: 5px;
+    text-align: center;
+    background-color: #405caa59;
+    margin: 10%;
+}
+
+/*TEAM BOX*/
+
+#masterTEAMbox
+{
+    box-sizing: border-box;
+
+    height: min-content;
+    width: 100%;
+    position: relative;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+    padding: 5px;
+}
+
+#TEAMimgBOX {
+    position: relative;
+    height: min-content;
+    width: min-content;
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    grid-template-rows: 100%;
+    
+}
+
+.imgButton {
+    position: relative;
+    
+    width: 50px;
+    height: 50px;
+    justify-self: center;
+    align-self: center;
+}
+
+
+
+#TEAMimg {
+    position: relative;
+    height: 400px;
+    width: 400px;
+    border-radius: 50%;
+    
+}
+
+#TEAMdescription {
+    width: min-content;
+    display: grid;
+    grid-template-columns: 1fr;
+    grid-template-rows: 10% 90%;
+    text-align: center;
+
+    margin: 20px;
+    height: 200px;
+    width: 300px;
+}
+
+
+
+
+
+
+#masterROBOTbox
+{
+    position: relative;
+}
+
+#masterPROJECTbox
+{
+    position: relative;
 }
