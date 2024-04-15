@@ -26,11 +26,17 @@ export let signPos = [
     {p: {x: 30, z: -30}, r: -pi/6, img: "../src/assets/img/9.png", rat: 1/2},
     {p: {x: -260, z: 140}, r: pi/3, img: "../src/assets/img/10.png", rat: 1/2},
     {p: {x: -228, z: 106}, r: pi/6, img: "../src/assets/img/11.png", rat: 1/2},
+    {p: {x: 55, z: 200}, r: pi/6, img: "../src/assets/img/14.png", rat: 1/2},
+    {p: {x: 160, z: 230}, r: -pi/4, img: "../src/assets/img/15.png", rat: 1/2},
 ]
 
 export let pedPos = [
-    {p: {x: -350, z: -90}, r: 0, obj: "../src/assets/model/eso6.glb"},
-    {p: {x: -330, z: -90}, r: 0, obj: "../src/assets/model/eso6.glb"}
+    {p: {x: -350, z: -90}, r: 0, obj: "../src/assets/model/eso6.glb", s: 1},
+    {p: {x: -330, z: -90}, r: 0, obj: "../src/assets/model/eso6.glb", s: 1},
+    {p: {x: 120, z: 310}, r: 0, obj: "../src/assets/model/statue3.glb", s: 10},
+    {p: {x: 120, z: 260}, r: 0, obj: "../src/assets/model/statue4.glb", s: 18},
+    {p: {x: 60, z: 260}, r: 0, obj: "../src/assets/model/statue5.glb", s: 1},
+    {p: {x: 60, z: 310}, r: 0, obj: "../src/assets/model/statue6.glb", s: 3},
 ]
 
 export let objPos = [
@@ -54,6 +60,14 @@ export let objPos = [
     {p: {x: -80, y: 0, z: 50}, r: pi/6, n: 17, b: 1, s: 3},
     {p: {x: -90, y: 0, z: 60}, r: pi/6, n: 18, b: 1, s: 3},
     {p: {x: -70, y: 0, z: 40}, r: pi/6, n: 19, b: 1, s: 3},
+    {p: {x: 110, y: 0, z: 200}, r: pi/3, n: 26, b: 2, s: .5},
+    {p: {x: 30, y: 0, z: 215}, r: pi/3, n: 21, b: 1, s: 3},
+    {p: {x: 130, y: 12, z: 195}, r: -pi/4, n: 24, b: 0, s: 3},
+    {p: {x: 175, y: 0, z: 250}, r: -pi/4, n: 23, b: 1, s: 3},
+    {p: {x: 108, y: 0, z: 260}, r: pi/4, n: 25, b: 1, s: 3},
+    {p: {x: 72, y: 0, z: 310}, r: -pi/4, n: 22, b: 1, s: 3},
+    {p: {x: 0, y: 0, z: 240}, r: -pi*2/3, n: 27, b: 2, s: 3},
+    {p: {x: 0, y: 16.5, z: 240}, r: pi/4, n: 20, b: 0, s: 3},
     // #####################################
     {p: {x: -183, y: 0, z: 120}, r: 0, n: "aie", b: 1, s: 3},
     {p: {x: -176, y: 0, z: 120}, r: 0, n: 0, b: 1, s: 3},

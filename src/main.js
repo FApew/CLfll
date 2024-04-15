@@ -14,10 +14,15 @@ import Stats from 'three/addons/libs/stats.module.js'
 
 const barEl = document.getElementById("bar")
 
-const Amotor = document.getElementById("Amotor")
+/*const Amotor = document.getElementById("Amotor")
 Amotor.loop = true
-Amotor.volume = 0
+Amotor.volume = 0*/
 //Amotor.play()
+
+const track = document.getElementById("track")
+track.loop = true
+track.volume = 0
+track.play()
 
 const Ibtn = [
     document.getElementById("Iforward"),
@@ -326,7 +331,7 @@ function init() {
             })
             loader.load(pedPos[i].obj, (gltf) => {
                 const obj = gltf.scene
-                let sc = .3
+                let sc = .3*pedPos[i].s
                 obj.scale.set(sc, sc, sc)
                 obj.traverse((child) => {
                     if (child.isMesh) {
@@ -540,6 +545,9 @@ function init() {
                 let box = new THREE.Box3().setFromObject(obj)
                 let size = new THREE.Vector3()
                 box.getSize(size)
+                if (objPos[i].n == 26) {
+                    size.y = 28.5/2
+                }
 
                 obj.position.set(objPos[i].p.x,objPos[i].p.y+size.y/2,objPos[i].p.z)
                 obj.rotation.set(0,objPos[i].r,0)
@@ -910,7 +918,7 @@ function init() {
                 camera.rotation.set(-0.57,0,0)
             }
 
-            if (btn.w || btn.a || btn .s || btn.d ) {
+            /*if (btn.w || btn.a || btn .s || btn.d ) {
                 if( Amotor.volume + 0.05 < 0.95) {
                     Amotor.volume += 0.05
                 } else {
@@ -922,7 +930,7 @@ function init() {
                 } else {
                     Amotor.volume = 0
                 }
-            }
+            }*/
 
             let dt = Date.now()
             /*wlet d = Math.abs(pt - dt)
@@ -1050,6 +1058,7 @@ function init() {
                             }
                             plane.geometry.setAttribute('color', new THREE.Float32BufferAttribute(arrCol, 3))
                             barEl.style.backgroundColor = `#${mainCol.getHexString()}`
+                            track.volume = 1
                             scene.fog = new THREE.Fog("#3a9ce7", 1, 700)
                         }
                     } else {
@@ -1068,6 +1077,7 @@ function init() {
                             barEl.style.backgroundColor = `#${mainCol.getHexString()}`
                             prevDis3 = dis2
                         }
+                        track.volume = 0
                         scene.fog = 0
                     }
                 } else {
@@ -1088,9 +1098,9 @@ function init() {
                 prevDis2 = dis2
             }
 
-            if (Amotor.currentTime > Amotor.duration - 0.2) {
+            /*if (Amotor.currentTime > Amotor.duration - 0.2) {
                 Amotor.currentTime = 0.2
-            }
+            }*/
 
             //cannonDebugger.update()
             

@@ -26,7 +26,7 @@ loader.load("../src/assets/model/robot.glb", (gltf) => {
 robot.position.set(0, 50, 0)
 //robot.position.set(-300, 50, -100)
 //robot.position.set(-210, 50, 190)
-//robot.position.set(90, 50, 290)
+robot.position.set(90, 50, 290)
 //robot.position.set(-320, 50, -70)
 
 export let chasBody = new CANNON.Body({
