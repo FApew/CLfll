@@ -686,19 +686,19 @@ function init() {
 
         let temp1 = new THREE.Mesh(
             new THREE.BoxGeometry(1,1,1),
-            new THREE.MeshBasicMaterial({color: 0xff0000})
+            new THREE.MeshBasicMaterial({visible: false})
         )
         temp1.position.set(-290, 1, -90)
         
         let temp2 = new THREE.Mesh(
             new THREE.BoxGeometry(1,1,1),
-            new THREE.MeshBasicMaterial({color: 0xff0000})
+            new THREE.MeshBasicMaterial({visible: false})
         )
         temp2.position.set(90, 1, 290)
 
         let temp3 = new THREE.Mesh(
             new THREE.BoxGeometry(1,1,1),
-            new THREE.MeshBasicMaterial({color: 0xff0000})
+            new THREE.MeshBasicMaterial({visible: false})
         )
         temp3.position.set(-210, 1, 210)
 
