@@ -21,8 +21,7 @@ Amotor.volume = 0*/
 
 const track = document.getElementById("track")
 track.loop = true
-track.volume = 0
-track.play()
+track.volume = 0.2
 
 const Ibtn = [
     document.getElementById("Iforward"),
@@ -867,13 +866,20 @@ function init() {
             scene.add(missions)
         }
 
-        let stats = new Stats()
+        /*let stats = new Stats()
         stats.domElement.style.position = 'absolute';
 		stats.domElement.style.top = '0px';
-        container.appendChild( stats.dom )
+        container.appendChild( stats.dom )*/
 
         let pt = Date.now()
 
+        document.addEventListener("click", () => {
+            track.play()
+        })
+        document.addEventListener("keypress", () => {
+            track.play()
+        })
+        
         function animate() {
             dirBox.position.set(camera.position.x - startPos.x - 80, camera.position.y - startPos.y + 56, camera.position.z - startPos.z + 140);
             dirLight.target.position.set(camera.position.x - startPos.x - 80, camera.position.y - startPos.y + 56, camera.position.z - startPos.z + 140)
@@ -1077,7 +1083,7 @@ function init() {
                             barEl.style.backgroundColor = `#${mainCol.getHexString()}`
                             prevDis3 = dis2
                         }
-                        track.volume = 0
+                        track.volume = 0.2
                         scene.fog = 0
                     }
                 } else {
@@ -1106,7 +1112,7 @@ function init() {
             
             //camera.position.set(-13.66457673308406, 0.12664596784900795, 15.39896081993017)
             //camera.rotation.set(-0.23905961802462464, -0.5525403285779773, -0.12722594623065786)
-            stats.update()
+            //stats.update()
             renderer.render(scene, camera)
             requestAnimationFrame( animate )
         }

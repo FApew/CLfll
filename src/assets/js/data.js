@@ -32,7 +32,7 @@ export let signPos = [
 
 export let pedPos = [
     {p: {x: -350, z: -90}, r: 0, obj: "../src/assets/model/eso6.glb", s: 1},
-    {p: {x: -330, z: -90}, r: 0, obj: "../src/assets/model/eso6.glb", s: 1},
+    {p: {x: -330, z: -90}, r: 0, obj: "../src/assets/model/eso0.glb", s: 1},
     {p: {x: 120, z: 310}, r: 0, obj: "../src/assets/model/statue3.glb", s: 10},
     {p: {x: 120, z: 260}, r: 0, obj: "../src/assets/model/statue4.glb", s: 18},
     {p: {x: 60, z: 260}, r: 0, obj: "../src/assets/model/statue5.glb", s: 1},

@@ -100,6 +100,10 @@ app.get("/src/assets/model/sign.glb", (req, res) => {
     res.sendFile(__dirname + "/src/assets/model/sign.glb")
 })
 
+app.get("/src/assets/model/eso0.glb", (req, res) => {
+    res.sendFile(__dirname + "/src/assets/model/eso0.glb")
+})
+
 app.get("/src/assets/model/eso6.glb", (req, res) => {
     res.sendFile(__dirname + "/src/assets/model/eso6.glb")
 })
@@ -130,7 +134,7 @@ for (let i = 0; i <= 27; i++) {
     })
 }
 
-for (let i = 0; i <= 15; i++) {
+for (let i = 0; i <= 16; i++) {
     app.get(`/src/assets/img/${i}.png`, (req, res) => {
         res.sendFile(__dirname + `/src/assets/img/${i}.png`)
     })

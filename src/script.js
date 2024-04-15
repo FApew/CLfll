@@ -1,4 +1,4 @@
-const schoolButton = document.getElementById("schoolButton")
+const schoolButton = document.getElementById("school")
 schoolButton.addEventListener("click", () => {
     window.open("https://www.calabreselevi.edu.it/")
 })
