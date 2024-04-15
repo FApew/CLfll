@@ -11,9 +11,13 @@ import { tiles } from "./assets/js/tiles.js"
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js"
 import CannonDebugger from "https://cdn.jsdelivr.net/npm/cannon-es-debugger@1.0.0/+esm"
 import Stats from 'three/addons/libs/stats.module.js'
-import { SVGLoader } from "three/addons/loaders/SVGLoader.js"
 
 const barEl = document.getElementById("bar")
+
+const Amotor = document.getElementById("Amotor")
+Amotor.loop = true
+Amotor.volume = 0
+//Amotor.play()
 
 const Ibtn = [
     document.getElementById("Iforward"),
@@ -26,7 +30,6 @@ const container = document.getElementById("main")
 
 const scene = new THREE.Scene()
 const loader = new GLTFLoader()
-const SVGloader = new SVGLoader()
 
 const speed = {s: 15, t: 10}, col1 = new THREE.Color(0x38c8ff), col2 = new THREE.Color(0xf2a200), col3 = new THREE.Color(0x404040) 
 
@@ -105,7 +108,7 @@ function init() {
             })
         )
         fllField.receiveShadow = true
-        fllField.position.set(-320, .582, -160)
+        fllField.position.set(-320, 0.582, -160)
         fllField.rotation.set(0,-Math.PI*23/12,0)
         scene.add(fllField)
 
@@ -154,7 +157,7 @@ function init() {
         })
         loader.load("../src/assets/model/objs/aie.glb", (gltf) => {
             const obj = gltf.scene
-            let sc = 1.8
+            let sc = 2.5
             obj.scale.set(sc,sc,sc)
 
             obj.traverse((child) => {
@@ -176,7 +179,7 @@ function init() {
             box.getSize(size)
 
             //obj.position.set(0,6,-1.6)
-            obj.position.set(0,5,0.8)
+            obj.position.set(0,9,1.3)
             
             smallRobot.add(obj)
             smallRobot.position.set(0,-50,0)
@@ -321,17 +324,32 @@ function init() {
             
                 world.addBody(cPed)
             })
-            /*const img = new THREE.Mesh(
-                new THREE.BoxGeometry(40, 0.01, 20),
-                new THREE.MeshBasicMaterial({ 
-                    map: new THREE.TextureLoader().load(signPos[i].img),
-                    flatShading: true
+            loader.load(pedPos[i].obj, (gltf) => {
+                const obj = gltf.scene
+                let sc = .3
+                obj.scale.set(sc, sc, sc)
+                obj.traverse((child) => {
+                    if (child.isMesh) {
+                        const newMaterial = new THREE.MeshStandardMaterial({
+                            color: child.material.color,
+                            map: child.material.map,
+                            side: THREE.DoubleSide
+                        })
+                        child.material = newMaterial
+                        child.castShadow = true
+                        child.receiveShadow = true
+                        child.geometry.computeVertexNormals()
+                    }
                 })
-            )
-            img.receiveShadow = true
-            img.position.set(-250, 12, -110)
-            img.rotation.set(Math.PI/2, 0 ,-signPos[i].r)
-            scene.add(img)*/
+
+                let box = new THREE.Box3().setFromObject(obj)
+                let size = new THREE.Vector3()
+                box.getSize(size)
+
+                obj.position.set(pedPos[i].p.x, 2*h+size.y/2, pedPos[i].p.z)
+                obj.rotation.y = pedPos[i].r+Math.PI/4
+                peds.add(obj)
+            })
         }
         //* #######################
 
@@ -509,11 +527,15 @@ function init() {
                         child.material = newMaterial
                         child.castShadow = true
                         child.receiveShadow = true
+                        if (objPos[i].n == 5)
+                        child.material.transparent = true
+                        child.material.opacity = 0.5
                         child.geometry.computeVertexNormals()
                     }
                 })
 
-                obj.scale.set(3,3,3)
+                let sc = objPos[i].s
+                obj.scale.set(sc,sc,sc)
 
                 let box = new THREE.Box3().setFromObject(obj)
                 let size = new THREE.Vector3()
@@ -699,24 +721,28 @@ function init() {
             switch (e.key) {
 
                 case "w":
+                    case "W":
                 case "ArrowUp": {
                     btn.w = 1
                     break 
                 }
 
                 case "a":
+                case "A":
                 case "ArrowLeft": {
                     btn.a = 1
                     break
                 }
 
                 case "s":
+                case "S":
                 case "ArrowDown": {
                     btn.s = 1
                     break
                 }
 
                 case "d":
+                case "D":
                 case "ArrowRight": {
                     btn.d = 1
                     break
@@ -734,24 +760,28 @@ function init() {
             switch (e.key) {
 
                 case "w":
+                case "W":
                 case "ArrowUp": {
                     btn.w = 0
                     break 
                 }
 
                 case "a":
+                case "A":
                 case "ArrowLeft": {
                     btn.a = 0
                     break
                 }
 
                 case "s":
+                case "S":
                 case "ArrowDown": {
                     btn.s = 0
                     break
                 }
 
                 case "d":
+                case "D":
                 case "ArrowRight": {
                     btn.d = 0
                     break
@@ -851,6 +881,7 @@ function init() {
             }
             
             if (btn.d && !btn.shift) {
+
                 cRobot.setWheelForce(speed.t, 0)
                 cRobot.setWheelForce(-speed.t, 1)
                 k1 *= 0
@@ -860,11 +891,11 @@ function init() {
                 cRobot.setWheelForce(speed.t, 1)
                 k1 *= 1.5
                 k2 *= 0
-            }
+            } 
             
             if (btn.w) {
                 cRobot.setWheelForce(-speed.s*k1, 0)
-                cRobot.setWheelForce(-speed.s*k2, 1)
+                cRobot.setWheelForce(-speed.s*k2, 1)  
             } else if (btn.s) {
                 cRobot.setWheelForce(speed.s*k2, 0)
                 cRobot.setWheelForce(speed.s*k1, 1)
@@ -877,6 +908,20 @@ function init() {
             } else {
                 controls.update()
                 camera.rotation.set(-0.57,0,0)
+            }
+
+            if (btn.w || btn.a || btn .s || btn.d ) {
+                if( Amotor.volume + 0.05 < 0.95) {
+                    Amotor.volume += 0.05
+                } else {
+                    Amotor.volume = 1
+                }
+            } else {
+                if (Amotor.volume / 1.1 > 0.05) {
+                    Amotor.volume /= 1.1
+                } else {
+                    Amotor.volume = 0
+                }
             }
 
             let dt = Date.now()
@@ -911,15 +956,17 @@ function init() {
             }
 
             for (let i = 0; i < objArr.length; i++) {
-                if (cObjs[i] != 0) {
-                    let obj = objArr[i], cObj = cObjs[i]
-                    if (cObj.velocity.length() < 0.01) {
-                        cObj.sleep()
-                    } else {
-                        obj.position.copy(cObj.position)
-                        obj.quaternion.copy(cObj.quaternion) 
+                try {
+                    if (cObjs[i] != 0) {
+                        let obj = objArr[i], cObj = cObjs[i]
+                        if (cObj.velocity.length() < 0.01) {
+                            cObj.sleep()
+                        } else {
+                            obj.position.copy(cObj.position)
+                            obj.quaternion.copy(cObj.quaternion) 
+                        }
                     }
-                }
+                } catch (e) {}
             }
 
             for (let i = 0; i < keyArr.length; i++) {
@@ -991,8 +1038,8 @@ function init() {
                         }
                     }
                 } else if (dis2 < 200) {
-                    if (dis2 < 150) {
-                        if (prevDis2 > 150) {
+                    if (dis2 < 112.8) {
+                        if (prevDis2 > 112.8) {
                             arrCol = []
                             mainCol = col3
                             let c = col3.getHSL(col3)
@@ -1003,11 +1050,12 @@ function init() {
                             }
                             plane.geometry.setAttribute('color', new THREE.Float32BufferAttribute(arrCol, 3))
                             barEl.style.backgroundColor = `#${mainCol.getHexString()}`
+                            scene.fog = new THREE.Fog("#3a9ce7", 1, 700)
                         }
                     } else {
                         if (Math.abs(prevDis3 - dis2) > 5) {
                             arrCol = []
-                            let p = 1-(dis2-150) / 50
+                            let p = 1-(dis2-112.8) / 77.2
                             let mix = new THREE.Color().lerpColors(col1, col3, p)
                             mix.getHSL(mix)
                             mainCol = mix
@@ -1020,6 +1068,7 @@ function init() {
                             barEl.style.backgroundColor = `#${mainCol.getHexString()}`
                             prevDis3 = dis2
                         }
+                        scene.fog = 0
                     }
                 } else {
                     if (prevDis2 < 200 || prevDis < 200) {
@@ -1037,6 +1086,10 @@ function init() {
                 }
                 prevDis = dis1
                 prevDis2 = dis2
+            }
+
+            if (Amotor.currentTime > Amotor.duration - 0.2) {
+                Amotor.currentTime = 0.2
             }
 
             //cannonDebugger.update()
